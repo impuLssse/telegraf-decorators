@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "dev": "nodemon -q"
+  },
+  "dependencies": {
+    "mongoose": "^8.7.1",
+    "telegraf": "^4.16.3",
+    "telegram-keyboard": "^2.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.5",
+    "tsconfig-paths": "^4.2.0"
+  }
+}

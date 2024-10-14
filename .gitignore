@@ -1,0 +1,7 @@
+node_modules
+.env
+.vscode
+dist
+build
+examples/officer-bot/.env
+examples/officer-bot/node_modules

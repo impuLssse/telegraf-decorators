@@ -1,0 +1,5 @@
+export * from './control-officers.home.scene'
+export * from './control-officers-list.scene'
+export * from './control-one-of-officer.scene'
+export * from './waiting-name-for-new-officer.scene'
+export * from './waiting-phone-for-new-officer.scene'
