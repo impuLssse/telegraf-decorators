@@ -2,7 +2,7 @@
   "name": "telegraf-ecosystem",
   "scripts": {
     "dev": "nodemon -q",
-    "publish": "npm version patch && npm publish",
+    "publish-to-npm": "npm version patch && npm publish",
     "dev:officer-bot": "nodemon -q --config nodemon.common.json"
   },
   "version": "0.0.13",
