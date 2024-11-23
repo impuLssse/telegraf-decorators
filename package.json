@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "nodemon -q",
     "build": "tsc --project tsconfig.build.json",
-    "publish-to-npm": "npm version patch && npm publish",
+    "publish-to-npm": "npm run build && npm version patch && npm publish",
     "dev:officer-bot": "nodemon -q --config nodemon.common.json"
   },
   "license": "MIT",
