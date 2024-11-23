@@ -6,6 +6,7 @@ config({ path: path.resolve(__dirname, "../.env") });
 const appConfig = process.env as IConfig;
 
 import knex from "knex";
+import { Stage } from "telegraf/scenes";
 import { session, Telegraf } from "telegraf";
 import { RootModule } from "telegraf-ecosystem";
 import { IConfig, IContext, SceneContract } from "./shared.types";
@@ -18,7 +19,6 @@ export const knexClient = knex({
 import "./scenes";
 
 export async function bootstrapBot(): Promise<void> {
-  const { Stage } = await import("telegraf/typings/scenes");
   const bot = new Telegraf<IContext>(appConfig.BOT_TOKEN);
 
   /** Используем middleware для работы с сессиями */

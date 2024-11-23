@@ -1,8 +1,8 @@
 import { Types } from "mongoose";
 import { Context } from "telegraf";
 import { UserService } from "@services/user";
+import { SceneContextScene } from "telegraf/scenes";
 import { Scenes as TelegrafScenes } from "telegraf";
-import { SceneContextScene } from "telegraf/typings/scenes";
 import { KeyboardModule, MessageOptions } from "@telegraf-decorators";
 import { CallbackQuery, Message, Update } from "telegraf/typings/core/types/typegram";
 
