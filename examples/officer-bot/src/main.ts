@@ -16,9 +16,9 @@ export const knexClient = knex({
 });
 
 import "./scenes";
-import { Stage } from "telegraf/typings/scenes";
 
 export async function bootstrapBot(): Promise<void> {
+  const { Stage } = await import("telegraf/typings/scenes");
   const bot = new Telegraf<IContext>(appConfig.BOT_TOKEN);
 
   /** Используем middleware для работы с сессиями */
