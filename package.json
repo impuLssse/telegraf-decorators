@@ -9,7 +9,8 @@
   },
   "license": "MIT",
   "author": "Safronov Maxim (impuLssse911)",
-  "version": "0.0.30",
+  "version": "0.0.29",
+  "main": "./dist/index.js",
   "files": [
     "dist",
     "tsconfig.json",
@@ -23,6 +24,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@telegraf/types": "^7.1.0",
     "dotenv": "^16.4.5",
     "telegram-keyboard": "^2.3.5"
   },

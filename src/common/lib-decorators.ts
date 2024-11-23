@@ -1,7 +1,9 @@
 import { Context } from "telegraf";
 import { RootModule } from "../main";
-import { Message } from "telegraf/typings/core/types/typegram";
-import { DistinctKeys } from "telegraf/typings/core/helpers/util";
+import { Message } from "@telegraf/types";
+
+export type UnionKeys<T> = T extends unknown ? keyof T : never;
+export type DistinctKeys<T extends object> = Exclude<UnionKeys<T>, keyof T>;
 
 export type ISceneRaw<Ctx = Context> = {
   sceneId: string;

@@ -7,8 +7,8 @@ import {
   UseGuardFn,
 } from "./common/lib-decorators";
 import { message } from "telegraf/filters";
+import { Stage } from "telegraf/scenes";
 import { ExtraModule, KeyboardModule } from "./common";
-import { Stage } from "telegraf/typings/scenes";
 import { Context, Telegraf, Scenes as TelegrafScenes } from "telegraf";
 import { MiddlewareFunction, SceneRegistrationOptions } from "./types";
 /**

@@ -2,7 +2,7 @@ import {
   InlineKeyboardMarkup,
   ReplyKeyboardMarkup,
   ReplyKeyboardRemove,
-} from "telegraf/typings/core/types/typegram";
+} from "@telegraf/types";
 import { Buttons, MakeOptions, Keyboard as BaseKeyboard } from "telegram-keyboard";
 
 export interface IContextTypedFunctions {
