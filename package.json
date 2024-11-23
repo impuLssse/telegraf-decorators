@@ -1,8 +1,10 @@
 {
+  "name": "telegraf-ecosystem",
   "scripts": {
     "dev": "nodemon -q",
     "dev:officer-bot": "nodemon -q --config nodemon.common.json"
   },
+  "version": "0.0.1",
   "dependencies": {
     "dotenv": "^16.4.5",
     "telegraf": "^4.16.3",

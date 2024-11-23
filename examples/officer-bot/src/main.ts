@@ -6,8 +6,8 @@ config({ path: path.resolve(__dirname, "../.env") });
 const appConfig = process.env as IConfig;
 
 import knex from "knex";
-import { RootModule } from "../../../src";
 import { session, Telegraf } from "telegraf";
+import { RootModule } from "telegraf-ecosystem";
 import { IConfig, IContext, SceneContract } from "./shared.types";
 
 export const knexClient = knex({
