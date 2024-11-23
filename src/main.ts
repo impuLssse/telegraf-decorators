@@ -6,32 +6,53 @@ import {
   TriggerFunction,
   UseGuardFn,
 } from "./common/lib-decorators";
-import { message } from "telegraf/filters";
+import {
+  IContextTypedFunctions,
+  MiddlewareFunction,
+  SceneRegistrationOptions,
+} from "./types";
 import { Stage } from "telegraf/scenes";
+import { message } from "telegraf/filters";
+import { isAsyncFunction } from "util/types";
 import { ExtraModule, KeyboardModule } from "./common";
 import { Context, Telegraf, Scenes as TelegrafScenes } from "telegraf";
-import { MiddlewareFunction, SceneRegistrationOptions } from "./types";
 /**
  * Эта коробка приложения, котора будет хранить все обработчики, команды и сцены
  */
-export class RootModule<Ctx extends Context> {
+export class RootModule<Ctx extends Context = Context> {
   static scenesRegistry = new Set<ISceneRaw>();
   static updatesRegistry = new Set<IUpdateRaw>();
 
   constructor(private bot: Telegraf<Ctx>, private stage: Stage<any, any>) {
     /** Регистрируем свои классы, которые позволяют удобные работать с Telegraf */
-    // this.bot.use((ctx, next) => {
-    //   const newCtx = ctx as Ctx &
-    //     IContextTypedFunctions & {
-    //       k: KeyboardModule;
-    //     };
-    //   const keyboardModule = KeyboardModule.getInstance();
-    //   const extraModule = ExtraModule.getInstance();
-    //   newCtx.ok = extraModule.ok.apply(extraModule, [ctx, next]);
-    //   newCtx.okAndEdit = extraModule.okAndEdit.apply(extraModule, [ctx, next]);
-    //   newCtx.k = keyboardModule;
-    //   return next();
-    // });
+    this.bot.use((ctx, next) => {
+      const newCtx = ctx as Ctx &
+        IContextTypedFunctions & {
+          k: KeyboardModule;
+        };
+      const keyboardModule = KeyboardModule.getInstance();
+      const extraModule = ExtraModule.getInstance();
+      newCtx.ok = extraModule.ok.apply(extraModule, [ctx, next]);
+      newCtx.okAndEdit = extraModule.okAndEdit.apply(extraModule, [ctx, next]);
+      newCtx.k = keyboardModule;
+      return next();
+    });
+  }
+
+  private async handleGuardCycle(ctx: Ctx, guards: UseGuardFn<Ctx>[]): Promise<void> {
+    for (let i = 0; i < guards.length; i++) {
+      const guard = guards[i];
+      const nextGuard = guards[i + 1];
+
+      /** Функция заглушка, которая нужна на случай если чел вызовет undefined, а следующего обработчика нет */
+      const emptyFunction = () => {};
+
+      if (isAsyncFunction(guard)) {
+        await guard(ctx, nextGuard ?? emptyFunction);
+      } else {
+        guard(ctx, nextGuard ?? emptyFunction);
+      }
+    }
   }
 
   private getGuards(
@@ -95,7 +116,7 @@ export class RootModule<Ctx extends Context> {
     const registeredSceneNames: string[] = [];
 
     const registeredScenes = sceneModules
-      .map((sceneModule) => {
+      .map(async (sceneModule) => {
         const isAlreadyRegistred = registeredSceneNames.some(
           (sceneName) => sceneName == sceneModule.sceneId
         );
@@ -111,77 +132,63 @@ export class RootModule<Ctx extends Context> {
         const scene = new TelegrafScenes.BaseScene<Ctx>(sceneModule.sceneId);
 
         /** Если нужна уведомлялка о регистрации сцены - можно указать в onSceneRegistered */
-        // if (options?.onSceneRegistered) {
-        //   if (isAsyncFunction(options?.onSceneRegistered)) {
-        //     options.onSceneRegistered(sceneModule.sceneId);
-        //   } else {
-        //     options.onSceneRegistered(sceneModule.sceneId);
-        //   }
-        // }
+        if (options?.onSceneRegistered) {
+          if (isAsyncFunction(options?.onSceneRegistered)) {
+            await options.onSceneRegistered(sceneModule.sceneId);
+          } else {
+            options.onSceneRegistered(sceneModule.sceneId);
+          }
+        }
 
         /** Регистрируем вход в сцену */
         sceneInstance.sceneEnterHandlers?.forEach(async (handler: string) => {
           const guards = this.getGuards(sceneInstance, handler);
 
-          scene.enter(sceneInstance[handler].bind(sceneInstance));
-          // scene.enter(
-          //   (ctx, next) => {
-          //     console.log(919);
-          //     return next();
-          //   },
-          //   (ctx, next) => {
-          //     for (const guard of guards) {
-          //       return guard(ctx, next);
-          //     }
-          //     return next();
-          //   },
-          //   sceneInstance[handler].bind(sceneInstance)
-          // );
+          scene.enter(async (ctx, next) => {
+            await this.handleGuardCycle(ctx as any, guards);
+            return next();
+          }, sceneInstance[handler].bind(sceneInstance));
         });
 
         /** Регистрируем действия внутри сцены */
         sceneInstance.actionListeners?.forEach(({ actionId, handler }: any) => {
           const guards = this.getGuards(sceneInstance, handler);
 
-          // scene.action(
-          //   actionId,
-          //   async (ctx, next) => {
-          //     for (const guard of guards) {
-          //       return guard(ctx as any, next);
-          //     }
-          //     return next();
-          //   },
-          //   sceneInstance[handler].bind(sceneInstance)
-          // );
+          scene.action(
+            actionId,
+            async (ctx, next) => {
+              await this.handleGuardCycle(ctx as any, guards);
+              return next();
+            },
+            sceneInstance[handler].bind(sceneInstance)
+          );
         });
 
         /** Регистрируем hears внутри сцены */
         sceneInstance.hearsListeners?.forEach(({ trigger, handler }: TriggerFunction) => {
           const guards = this.getGuards(sceneInstance, handler);
 
-          // scene.hears(
-          //   trigger,
-          //   async (ctx, next) => {
-          //     for (const guard of guards) {
-          //       return guard(ctx as any, next);
-          //     }
-          //     return next();
-          //   },
-          //   sceneInstance[handler].bind(sceneInstance)
-          // );
+          scene.hears(
+            trigger,
+            async (ctx, next) => {
+              await this.handleGuardCycle(ctx as any, guards);
+              return next();
+            },
+            sceneInstance[handler].bind(sceneInstance)
+          );
         });
 
         /** Регистрируем on внутри сцены */
-        // sceneInstance.eventListeners?.forEach(({ filter, handler }: any) => {
-        //   scene.on(message(filter), sceneInstance[handler].bind(sceneInstance));
-        // });
+        sceneInstance.eventListeners?.forEach(({ filter, handler }: any) => {
+          scene.on(message(filter), sceneInstance[handler].bind(sceneInstance));
+        });
         return scene;
       })
       .filter(Boolean);
 
     /** Регистрируем все сцены с помощью Stage */
-    registeredScenes.forEach((scene) => {
-      this.stage.register(scene);
+    registeredScenes.forEach(async (scene) => {
+      this.stage.register(await scene);
     });
 
     /** Используем middleware для работы со сценами */

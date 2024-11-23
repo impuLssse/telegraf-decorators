@@ -25,8 +25,11 @@
   },
   "dependencies": {
     "@telegraf/types": "^7.1.0",
+    "awilix": "^12.0.3",
+    "awilix-manager": "^5.5.0",
     "dotenv": "^16.4.5",
-    "telegram-keyboard": "^2.3.5"
+    "telegram-keyboard": "^2.3.5",
+    "winston": "^3.17.0"
   },
   "peerDependencies": {
     "telegraf": "^4.16.3"

@@ -19,6 +19,18 @@ export const knexClient = knex({
 import "./scenes";
 
 export async function bootstrapBot(): Promise<void> {
+  if (!appConfig.DATABASE_URL) {
+    throw new Error(`Не указано подключение DATABASE_URL`);
+  }
+
+  try {
+    await knexClient.raw("select 1+1 as result");
+    console.log(`Database connected`);
+  } catch (e) {
+    console.log(e);
+    process.exit(1);
+  }
+
   const bot = new Telegraf<IContext>(appConfig.BOT_TOKEN);
 
   /** Используем middleware для работы с сессиями */
@@ -26,8 +38,8 @@ export async function bootstrapBot(): Promise<void> {
 
   const stage = new Stage<IContext>();
   const rootModule = new RootModule(bot, stage);
-  // rootModule.registerUpdates([...RootModule.updatesRegistry]);
-  console.log(RootModule.scenesRegistry);
+
+  rootModule.registerUpdates([...RootModule.updatesRegistry]);
   rootModule.registerScenes([...RootModule.scenesRegistry], {
     onSceneRegistered(sceneId) {
       console.log(`Scene registered: ${sceneId}`);

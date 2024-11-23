@@ -24,8 +24,8 @@
     "paths": {
       "@": ["./src/"],
       "@*": ["./src/*"],
-      "@telegraf-decorators": ["../../src/"],
-      "@telegraf-decorators*": ["../../src/*"]
+      "telegraf-ecosystem": ["../../src/"],
+      "telegraf-ecosystem*": ["../../src/*"]
     }
   },
   "exclude": ["node_modules", "dist"]

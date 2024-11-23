@@ -3,7 +3,7 @@ import { Context } from "telegraf";
 import { UserService } from "@services/user";
 import { SceneContextScene } from "telegraf/scenes";
 import { Scenes as TelegrafScenes } from "telegraf";
-import { KeyboardModule, MessageOptions } from "@telegraf-decorators";
+import { KeyboardModule, MessageOptions } from "telegraf-ecosystem";
 import { CallbackQuery, Message, Update } from "telegraf/typings/core/types/typegram";
 
 export interface IConfig {

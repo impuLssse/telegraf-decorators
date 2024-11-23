@@ -55,7 +55,6 @@ export function Scene(sceneId: string): ClassDecorator {
 /** Декоратор для регистрации класса как сцены */
 export function Update(): ClassDecorator {
   return (constructor: any) => {
-    console.log(RootModule);
     RootModule.updatesRegistry.add({ constructor });
   };
 }

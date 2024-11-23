@@ -1,4 +1,3 @@
-import { AuthGuard } from "@guards";
 import {
   Scene,
   SceneEnter,
@@ -8,14 +7,13 @@ import {
   Update,
   Use,
 } from "../../../../src";
+import { AuthGuard } from "../guards";
 import { IContext, SceneContract } from "../shared.types";
 
 @Scene(SceneContract.Home)
 export class HomeScene {
   @SceneEnter()
   async enter(ctx: IContext) {
-    console.log(321);
-
     await ctx.okAndEdit("Выберите функцию", {
       ...ctx.k.simpleInlineKeyboard([
         ["Управление пользователем"],

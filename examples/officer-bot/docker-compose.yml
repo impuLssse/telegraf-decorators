@@ -1,0 +1,10 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_DB: default_db
+      POSTGRES_USER: officer
+      POSTGRES_PASSWORD: officer-password
+    ports:
+      - 5432:5432
