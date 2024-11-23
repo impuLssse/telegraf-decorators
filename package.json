@@ -14,12 +14,13 @@
     "dist"
   ],
   "dependencies": {
-    "@telegraf/types": "^7.1.0",
     "dotenv": "^16.4.5",
     "telegraf": "^4.16.3",
+    "@telegraf/types": "^7.1.0",
     "telegram-keyboard": "^2.3.5"
   },
   "peerDependencies": {
+    "@telegraf/types": "^7.1.0",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
