@@ -4,25 +4,29 @@
     "dev": "nodemon -q",
     "build": "rimraf dist && tsc --project tsconfig.build.json && rimraf tsconfig.build.tsbuildinfo",
     "publish-to-npm": "npm run build && npm version patch && npm publish",
-    "dev:officer-bot": "nodemon -q --config nodemon.common.json"
+    "dev:officer-bot": "nodemon -q --config nodemon.common.json",
+    "fast-save": "git add . && git commit -m \"fast-save\" && git push && npm run publish-to-npm"
   },
   "license": "MIT",
   "author": "Safronov Maxim (impuLssse911)",
   "version": "0.0.29",
-  "main": "./dist/index.js",
   "files": [
     "dist",
     "tsconfig.json",
     "tsconfig.build.json"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/impuLssse/telegraf-decorators.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "telegraf": "^4.16.3",
-    "@telegraf/types": "^7.1.0",
     "telegram-keyboard": "^2.3.5"
   },
   "peerDependencies": {
-    "@telegraf/types": "^7.1.0",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
