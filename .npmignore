@@ -6,6 +6,8 @@
 !**/*.d.ts
 !*.d.ts
 
+examples/
+
 # configuration
 package-lock.json
 tslint.json
@@ -17,5 +19,3 @@ nodemon.json
 nodemon.common.json
 tsconfig.json
 tsconfig.build.json
-
-examples/*
