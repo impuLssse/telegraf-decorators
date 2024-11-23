@@ -17,6 +17,4 @@ tsconfig.json
 *.tsbuildinfo
 nodemon.json
 nodemon.common.json
-tsconfig.json
-tsconfig.build.json
 tsconfig.build.tsbuildinfo
