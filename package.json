@@ -12,8 +12,8 @@
   "main": "./dist/index.js",
   "files": [
     "dist",
-    "tconfig.json",
-    "tconfig.build.json"
+    "tsconfig.json",
+    "tsconfig.build.json"
   ],
   "dependencies": {
     "dotenv": "^16.4.5",
