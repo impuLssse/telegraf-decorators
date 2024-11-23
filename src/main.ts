@@ -45,7 +45,6 @@ export class RootModule<Ctx extends Context> {
    * Регистрация глобальных команд, миддлваров
    */
   registerUpdates(updateModules: IUpdateRaw[]): void {
-    return;
     for (const updateModule of updateModules) {
       /** Экземпляр обновления - класс на который навешали декоратор @Update */
       const updateInsance: IUpdateComponent = new updateModule.constructor();

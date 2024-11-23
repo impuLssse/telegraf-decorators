@@ -27,6 +27,7 @@ export async function bootstrapBot(): Promise<void> {
   const stage = new Stage<IContext>();
   const rootModule = new RootModule(bot, stage);
   // rootModule.registerUpdates([...RootModule.updatesRegistry]);
+  console.log(RootModule.scenesRegistry);
   rootModule.registerScenes([...RootModule.scenesRegistry], {
     onSceneRegistered(sceneId) {
       console.log(`Scene registered: ${sceneId}`);
@@ -34,9 +35,7 @@ export async function bootstrapBot(): Promise<void> {
   });
 
   bot.start(async (ctx) => {
-    console.log(999);
-    console.log(ctx);
-    // await ctx.scene.enter(SceneContract.Home);
+    await ctx.scene.enter(SceneContract.Home);
   });
 
   /**
