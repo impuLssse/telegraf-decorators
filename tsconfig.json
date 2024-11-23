@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "declaration": false,
+    "declaration": true,
     "allowJs": true,
     "strict": true,
     "module": "commonjs",
@@ -11,7 +11,6 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "target": "es2021",
-    "outDir": "build",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,

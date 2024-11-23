@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "paths": {
+      "telegraf-ecosystem/": ["../telegraf-ecosystem"],
+      "telegraf-ecosystem/*": ["../telegraf-ecosystem/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "test/**/*", "*.spec.ts", "examples/*"]
+}
