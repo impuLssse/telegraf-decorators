@@ -5,7 +5,7 @@
     "publish": "npm version patch && npm publish",
     "dev:officer-bot": "nodemon -q --config nodemon.common.json"
   },
-  "version": "0.0.6",
+  "version": "0.0.7",
   "dependencies": {
     "dotenv": "^16.4.5",
     "telegraf": "^4.16.3",
