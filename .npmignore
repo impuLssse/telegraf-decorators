@@ -17,3 +17,5 @@ nodemon.json
 nodemon.common.json
 tsconfig.json
 tsconfig.build.json
+
+examples
