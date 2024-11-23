@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "author": "Safronov Maxim (impuLssse911)",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "main": "./dist/index.js",
   "files": [
     "dist",
