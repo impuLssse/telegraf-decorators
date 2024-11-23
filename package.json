@@ -8,7 +8,7 @@
   },
   "license": "MIT",
   "author": "Safronov Maxim (impuLssse911)",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "main": "./dist/index.js",
   "exports": "./dist/index.js",
   "dependencies": {
