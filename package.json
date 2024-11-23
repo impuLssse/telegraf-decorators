@@ -11,6 +11,9 @@
   "version": "0.0.22",
   "main": "./dist/index.js",
   "exports": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "dotenv": "^16.4.5",
     "telegraf": "^4.16.3",
