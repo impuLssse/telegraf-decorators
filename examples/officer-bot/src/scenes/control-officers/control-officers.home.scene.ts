@@ -1,6 +1,6 @@
 import { AuthGuard } from "../../guards";
 import { IContext, SceneContract } from "../../shared.types";
-import { Scene, SceneEnter, Action, UseGuard } from "../../common";
+import { Scene, SceneEnter, Action, UseGuard } from "../../../../../src";
 
 @Scene(SceneContract.ControlOfficersHome)
 export class ControlDoctorsMenuScene {

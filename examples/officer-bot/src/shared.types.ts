@@ -8,6 +8,7 @@ import { CallbackQuery, Message, Update } from "telegraf/typings/core/types/type
 
 export interface IConfig {
   BOT_TOKEN?: string;
+  DATABASE_URL?: string;
 }
 
 export interface IContext extends Context, IContextTypedFunctions {

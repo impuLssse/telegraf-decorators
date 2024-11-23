@@ -1,7 +1,7 @@
+import { knexClient } from "@main";
 import { AuthGuard } from "../../guards";
 import { IContext, IOfficer, SceneContract } from "../../shared.types";
-import { Scene, SceneEnter, Action, UseGuard, On } from "../../common";
-import { knexClient } from "@bot/hei/main";
+import { Scene, SceneEnter, Action, UseGuard, On } from "../../../../../src";
 
 @Scene(SceneContract.WaitingPhoneForNewOfficer)
 export class WaitingPhoneForNewOfficerScene {
@@ -46,8 +46,9 @@ export class WaitingPhoneForNewOfficerScene {
 
     await ctx.scene.enter(SceneContract.ControlOfficersHome);
     console.log(`createdOfficer:`, createdOfficer);
+
     await ctx.ok(
-      `Создан офицер с именем: *${createdOfficer?.name}* и телефоном: *${createdOfficer?.phone}*`,
+      `Создан офицер с именем: *${createdOfficer?.name}* и телефоном: *${createdOfficer?.phone}*`
     );
   }
 

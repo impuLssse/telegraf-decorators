@@ -1,6 +1,6 @@
 import { isValidObjectId, Types } from "mongoose";
 import { IContext, SceneContract } from "../shared.types";
-import { Scene, SceneEnter, Hears, Action } from "@telegraf-decorators";
+import { Scene, SceneEnter, Hears, Action } from "../../../../src";
 
 @Scene(SceneContract.WaitingControlUserId)
 export class WaitingControlUserIdScene {

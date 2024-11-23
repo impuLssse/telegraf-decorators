@@ -1,5 +1,5 @@
 import { IContext, SceneContract } from "../shared.types";
-import { Action, Scene, SceneEnter, UseGuard } from "../common";
+import { Action, Scene, SceneEnter, UseGuard } from "../../../../src";
 
 @Scene(SceneContract.ControlUser)
 export class ControlUserScene {
@@ -7,10 +7,10 @@ export class ControlUserScene {
   @SceneEnter()
   async enterScene(ctx: IContext) {
     await ctx.okAndEdit(
-      `\Управление пользователем: \`${ctx.session.userContoller._id}\`:\`${ctx.session.userContoller?.authPhone}\`  `,
+      `\Управление пользователем: \`${ctx.session.userContoller._id}\`:\`${ctx.session.userContoller?.phone}\`  `,
       {
         ...ctx.k.simpleInlineKeyboard([["Сбросить дневной лимит СМС"], ["Назад"]]),
-      },
+      }
     );
   }
 

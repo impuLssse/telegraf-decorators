@@ -1,0 +1,6 @@
+{
+  "ignore": [".git", "node_modules", "*.spec.ts", "dist"],
+  "watch": ["src", "examples/officer-bot/src"],
+  "ext": "ts,json",
+  "exec": "npx ts-node -r tsconfig-paths/register examples/officer-bot/src/main.ts"
+}

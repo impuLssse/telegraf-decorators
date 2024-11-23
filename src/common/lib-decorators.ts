@@ -14,10 +14,7 @@ export enum TypeModule {
   Update = "Update",
 }
 
-export type UseGuardFn<Ctx extends Context = Context> = (
-  ctx: Ctx,
-  next: Function
-) => Promise<void> | void;
+export type UseGuardFn<Ctx> = (ctx: Ctx, next: Function) => Promise<void> | void;
 
 export interface ISceneComponent<Ctx extends Context> {
   sceneEnterHandlers?: any[];
@@ -122,7 +119,9 @@ export function On<Ks extends DistinctKeys<Message>[]>(
   };
 }
 
-export function UseGuard(...guards: UseGuardFn[]): MethodDecorator {
+export function UseGuard<Ctx extends Context = Context>(
+  ...guards: UseGuardFn<Ctx>[]
+): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
     if (!target.guards) {
       target.guards = new Map();

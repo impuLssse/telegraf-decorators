@@ -9,7 +9,6 @@ export class ExtraModule<Ctx extends Context = Context> {
   static getInstance(): ExtraModule {
     if (!ExtraModule.instance) {
       this.instance = new ExtraModule();
-      return this.instance;
     }
 
     return ExtraModule.instance;
