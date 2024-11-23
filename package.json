@@ -14,7 +14,7 @@
     "telegraf": "^4.16.3",
     "telegram-keyboard": "^2.3.5"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "peerDependencies": {
     "telegraf": "^4.16.3"
   },
