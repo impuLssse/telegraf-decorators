@@ -1,5 +1,5 @@
-// import chalk from "chalk";
-import { createLogger, format, Logger, transports } from "winston";
+import chalk from "chalk";
+import { createLogger, format, Logger as WinstonLogger, transports } from "winston";
 
 export const commonFormat = format.combine(
   format.timestamp({
@@ -10,7 +10,7 @@ export const commonFormat = format.combine(
 );
 
 export class BotLogger {
-  private logger: Logger;
+  private logger: WinstonLogger;
 
   constructor() {
     this.logger = createLogger({
@@ -24,11 +24,11 @@ export class BotLogger {
   }
 
   log(link: string, message: string) {
-    // this.logger.verbose(`${chalk.greenBright(link)} ${message}`);
+    this.logger.verbose(`${chalk.greenBright(link)} ${message}`);
   }
 
   fatal(message: string) {
-    // this.logger.error(`${chalk.redBright(message)}`);
+    this.logger.error(`${chalk.redBright(message)}`);
   }
 
   warn(message: string) {
@@ -36,4 +36,4 @@ export class BotLogger {
   }
 }
 
-export const botLogger = new BotLogger();
+export const Logger = new BotLogger();

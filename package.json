@@ -3,6 +3,9 @@
   "scripts": {
     "dev": "nodemon -q",
     "dev:officer-bot": "nodemon -q --config nodemon.common.json",
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview",
     "build": "rimraf dist && tsc --project tsconfig.build.json && rimraf tsconfig.build.tsbuildinfo",
     "publish-to-npm": "npm run build && npm version patch && npm publish",
     "fast-save": "git add . && git commit -m \"fast-save\" && git push && npm run publish-to-npm"
@@ -37,9 +40,12 @@
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
+    "autoprefixer": "^10.4.20",
     "chalk": "^4.1.2",
     "rimraf": "^6.0.1",
-    "tsconfig-paths": "^4.2.0"
+    "tailwindcss": "^3.4.15",
+    "tsconfig-paths": "^4.2.0",
+    "vitepress": "^1.5.0"
   },
   "keywords": [
     "telegraf",

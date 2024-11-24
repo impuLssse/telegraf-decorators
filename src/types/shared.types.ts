@@ -21,6 +21,11 @@ export interface EditTextMessageOptions {
   reply_markup: InlineKeyboardMarkup;
 }
 
+export enum AllowChatType {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE",
+}
+
 export interface IContextTypedKeyboard {
   simpleInlineKeyboard: (
     buttons: Buttons,

@@ -30,8 +30,13 @@ export class RootModule<Ctx extends Context = Context> {
         IContextTypedFunctions & {
           k: KeyboardModule;
         };
+
+      /**
+       * Пакет telegram-keyboard это обёртка над Markup в telegraf, а мой пакет это обёртка над telegraf и telegram-keyboard :)
+       */
       const keyboardModule = KeyboardModule.getInstance();
       const extraModule = ExtraModule.getInstance();
+
       newCtx.ok = extraModule.ok.apply(extraModule, [ctx, next]);
       newCtx.okAndEdit = extraModule.okAndEdit.apply(extraModule, [ctx, next]);
       newCtx.k = keyboardModule;
@@ -40,6 +45,11 @@ export class RootModule<Ctx extends Context = Context> {
   }
 
   private async handleGuardCycle(ctx: Ctx, guards: UseGuardFn<Ctx>[]): Promise<void> {
+    /**
+     * Chain of Responsability — паттерн преоктирования, при котором строится цепочка зависимых от друг друга фукнций.
+     *
+     * @see —
+     */
     for (let i = 0; i < guards.length; i++) {
       const guard = guards[i];
       const nextGuard = guards[i + 1];

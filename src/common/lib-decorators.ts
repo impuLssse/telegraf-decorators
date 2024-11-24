@@ -1,6 +1,8 @@
 import { Context } from "telegraf";
 import { RootModule } from "../main";
 import { Message } from "@telegraf/types";
+import { BotError } from "@bot-error";
+import { AllowChatType } from "@types";
 
 export type UnionKeys<T> = T extends unknown ? keyof T : never;
 export type DistinctKeys<T extends object> = Exclude<UnionKeys<T>, keyof T>;
@@ -131,5 +133,21 @@ export function UseGuard<Ctx extends Context = Context>(
 
     /** Устанавливаем на метод набор гвардов, который он указал через декоратор */
     target.guards.set(propertyKey, guards);
+  };
+}
+
+export function ChatType(chatType: AllowChatType) {
+  return (ctx: Context, next: Function) => {
+    if (
+      chatType == AllowChatType.PUBLIC &&
+      (ctx.chat.type == "group" || ctx.chat.type == "supergroup")
+    ) {
+      return next();
+    }
+    if (chatType == AllowChatType.PRIVATE && ctx.chat.type !== "private") {
+      throw BotError.goToPrivateChat();
+    }
+
+    return next();
   };
 }
