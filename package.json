@@ -2,11 +2,12 @@
   "name": "telegraf-ecosystem",
   "scripts": {
     "dev": "nodemon -q",
+    "dev:officer-bot": "nodemon -q --config nodemon.common.json",
     "build": "rimraf dist && tsc --project tsconfig.build.json && rimraf tsconfig.build.tsbuildinfo",
     "publish-to-npm": "npm run build && npm version patch && npm publish",
-    "dev:officer-bot": "nodemon -q --config nodemon.common.json",
     "fast-save": "git add . && git commit -m \"fast-save\" && git push && npm run publish-to-npm"
   },
+  "type": "commonjs",
   "license": "MIT",
   "author": "Safronov Maxim (impuLssse911)",
   "version": "0.0.34",
@@ -18,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/impuLssse/telegraf-decorators.git"
+    "url": "https://github.com/impuLssse/telegraf-ecosystem.git"
   },
   "publishConfig": {
     "access": "public"
@@ -36,7 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
-    "chalk": "^5.3.0",
+    "chalk": "^4.1.2",
     "rimraf": "^6.0.1",
     "tsconfig-paths": "^4.2.0"
   },
@@ -47,7 +48,6 @@
     "bot",
     "botapi",
     "bot framework",
-    "telegram-eco",
-    "telegram-ecosystem"
+    "telegraf-ecosystem"
   ]
 }

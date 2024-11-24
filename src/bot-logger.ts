@@ -1,4 +1,4 @@
-import chalk from "chalk";
+// import chalk from "chalk";
 import { createLogger, format, Logger, transports } from "winston";
 
 export const commonFormat = format.combine(
@@ -24,11 +24,11 @@ export class BotLogger {
   }
 
   log(link: string, message: string) {
-    this.logger.verbose(`${chalk.greenBright(link)} ${message}`);
+    // this.logger.verbose(`${chalk.greenBright(link)} ${message}`);
   }
 
   fatal(message: string) {
-    this.logger.error(`${chalk.redBright(message)}`);
+    // this.logger.error(`${chalk.redBright(message)}`);
   }
 
   warn(message: string) {
