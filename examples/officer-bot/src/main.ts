@@ -8,7 +8,7 @@ const appConfig = process.env as IConfig;
 import knex from "knex";
 import { Stage } from "telegraf/scenes";
 import { session, Telegraf } from "telegraf";
-import { RootModule } from "telegraf-ecosystem";
+import { Ecosystem } from "telegraf-ecosystem";
 import { IConfig, IContext, SceneContract } from "./shared.types";
 
 export const knexClient = knex({
@@ -17,6 +17,7 @@ export const knexClient = knex({
 });
 
 import "./scenes";
+import chalk from "chalk";
 
 export async function bootstrapBot(): Promise<void> {
   if (!appConfig.DATABASE_URL) {
@@ -36,13 +37,10 @@ export async function bootstrapBot(): Promise<void> {
   /** Используем middleware для работы с сессиями */
   bot.use(session());
 
-  const stage = new Stage<IContext>();
-  const rootModule = new RootModule(bot, stage);
-
-  rootModule.registerUpdates([...RootModule.updatesRegistry]);
-  rootModule.registerScenes([...RootModule.scenesRegistry], {
+  const ecosystem = await Ecosystem.createBotEcosystem({
+    bot,
     onSceneRegistered(sceneId) {
-      console.log(`Scene registered: ${sceneId}`);
+      console.log(chalk.bgGreenBright(`Scene registered: ${sceneId}`));
     },
   });
 

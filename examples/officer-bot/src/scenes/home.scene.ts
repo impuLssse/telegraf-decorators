@@ -6,7 +6,9 @@ import {
   Command,
   Update,
   Use,
-} from "../../../../src";
+  ChatType,
+  AllowChatType,
+} from "telegraf-ecosystem";
 import { AuthGuard } from "../guards";
 import { IContext, SceneContract } from "../shared.types";
 
@@ -27,6 +29,7 @@ export class HomeScene {
   async controlUser(ctx: IContext) {
     await ctx.scene.enter(SceneContract.WaitingControlUserId);
   }
+
   @UseGuard(AuthGuard)
   @Action("Управление офицерами")
   async controlEmergencyAdminUsers(ctx: IContext) {
@@ -42,6 +45,7 @@ export class HomeUpdate {
   }
 
   @Command("hello")
+  @ChatType(AllowChatType.PRIVATE)
   async sayHello(ctx: IContext) {
     await ctx.reply("1");
   }

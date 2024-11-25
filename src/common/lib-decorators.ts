@@ -1,125 +1,151 @@
 import { Context } from "telegraf";
-import { RootModule } from "../main";
+import { Ecosystem } from "../main";
+import { BotError } from "../bot-error";
 import { Message } from "@telegraf/types";
-import { BotError } from "@bot-error";
-import { AllowChatType } from "@types";
+import { AllowChatType, DistinctKeys, UseGuardFn } from "../types";
 
-export type UnionKeys<T> = T extends unknown ? keyof T : never;
-export type DistinctKeys<T extends object> = Exclude<UnionKeys<T>, keyof T>;
+export namespace EcosystemTypes {
+  /** Класс на который навешали @Scene будет иметь конструктор и название сцены */
+  export type SceneComponent = {
+    sceneId: string;
+    constructor: new () => SceneOrUpdateComponent;
+  };
 
-export type ISceneRaw<Ctx = Context> = {
-  sceneId: string;
-  constructor: new () => ISceneComponent<Ctx & Context>;
-};
-export type IUpdateRaw = { constructor: new () => IUpdateComponent };
+  /** Класс на который навешали @Update будет иметь только конструктор */
+  export type UpdateComponent = new () => SceneOrUpdateComponent;
 
-export enum TypeModule {
-  Scene = "Scene",
-  Update = "Update",
-}
+  /**
+   * Компонент состоит из слушатели событый (action, on, hears)
+   */
+  export interface SceneOrUpdateComponent {
+    ecosystem: Ecosystem;
+    middlewares: string[];
+    sceneEnterHandlers: string[];
+    eventListeners: EcosystemTypes.EventHandler[];
+    hearsListeners: EcosystemTypes.HearsHandler[];
+    actionListeners: EcosystemTypes.ActionHandler[];
+    commandListeners: EcosystemTypes.CommandHandler[];
 
-export type UseGuardFn<Ctx> = (ctx: Ctx, next: Function) => Promise<void> | void;
+    /** На один обработчик внутри обновления может быть несколько последовательных гварда */
+    guards: Map<string, UseGuardFn<unknown>[]>;
+  }
 
-export interface ISceneComponent<Ctx extends Context> {
-  sceneEnterHandlers?: any[];
-  hearsListeners?: TriggerFunction[];
-  actionListeners?: TriggerFunction[];
-  eventListeners?: EventFunction[];
+  export enum TypeModule {
+    Scene = "Scene",
+    Update = "Update",
+  }
 
-  /** На один обработчик внутри сцены может быть несколько последовательных гварда */
-  guards: Map<string, UseGuardFn<Ctx>[]>;
-}
+  export interface BaseHandler {
+    handler: string;
+  }
 
-export type TriggerFunction = {
-  trigger: RegExp | string | string[];
-  handler: string;
-};
+  /** Нужен для декоратора: On */
+  export interface EventHandler extends BaseHandler {
+    filters: DistinctKeys<Message>[];
+  }
 
-export type EventFunction = {
-  trigger: DistinctKeys<Message>[];
-  handler: string;
-};
+  /** Нужен для декоратора Action */
+  export interface ActionHandler extends BaseHandler {
+    actionId: RegExp | string | string[];
+  }
 
-export interface IUpdateComponent {
-  middlewares?: string[];
-  eventListeners?: EventFunction[];
-  hearsListeners?: TriggerFunction[];
-  commandListeners?: TriggerFunction[];
+  /** Нужен для декоратора Hears */
+  export interface HearsHandler extends BaseHandler {
+    triggers: RegExp | string | string[];
+  }
+
+  /** Нужен для декоратора Command */
+  export interface CommandHandler extends BaseHandler {
+    commands: string | string[];
+  }
 }
 
 /** Декоратор для регистрации класса как сцены */
-export function Scene(sceneId: string): ClassDecorator {
-  return (constructor: any) => {
-    RootModule.scenesRegistry.add({ sceneId, constructor });
+export function Scene(sceneId: string, botToken?: string): ClassDecorator {
+  return (target: any) => {
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+    // https://stackoverflow.com/questions/63447699/integrating-nodejs-di-container-awilix-with-type-safety
+    Ecosystem;
+    // RootModule.scenesRegistry.add({ sceneId, constructor: target });
   };
 }
 
 /** Декоратор для регистрации класса как сцены */
 export function Update(): ClassDecorator {
-  return (constructor: any) => {
-    RootModule.updatesRegistry.add({ constructor });
+  return (target: any) => {
+    // RootModule.updatesRegistry.add(target);
   };
 }
 
 /** Декоратор для регистрации точки входа в сцену */
 export function SceneEnter(): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
-    if (!target.sceneEnterHandlers) {
-      target.sceneEnterHandlers = [];
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+
+    if (!prototype.sceneEnterHandlers) {
+      prototype.sceneEnterHandlers = [];
     }
-    target.sceneEnterHandlers.push(propertyKey);
+    prototype.sceneEnterHandlers.push(propertyKey.toString());
   };
 }
 
 /** Декоратор для слушателей сообщений (hears) */
-export function Hears(trigger: string | RegExp): MethodDecorator {
+export function Hears(triggers: string | string[] | RegExp): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
-    if (!target.hearsListeners) {
-      target.hearsListeners = [];
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+
+    if (!prototype.hearsListeners) {
+      prototype.hearsListeners = [];
     }
-    target.hearsListeners.push({ trigger, handler: propertyKey });
+    prototype.hearsListeners.push({ triggers, handler: propertyKey.toString() });
   };
 }
 
 /** Декоратор для действий (callback-кнопки) */
 export function Action(actionId: string | RegExp): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
-    if (!target.actionListeners) {
-      target.actionListeners = [];
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+
+    if (!prototype.actionListeners) {
+      prototype.actionListeners = [];
     }
-    target.actionListeners.push({ actionId, handler: propertyKey });
+    prototype.actionListeners.push({ actionId, handler: propertyKey.toString() });
   };
 }
 
 /** Декоратор для команд */
-export function Command(trigger: string | RegExp | string[]): MethodDecorator {
+export function Command(commands: string | string[]): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
-    if (!target.commandListeners) {
-      target.commandListeners = [];
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+
+    if (!prototype.commandListeners) {
+      prototype.commandListeners = [];
     }
-    target.commandListeners.push({ trigger, handler: propertyKey });
+    prototype.commandListeners.push({ commands, handler: propertyKey.toString() });
   };
 }
 
 /** Декоратор для команд */
 export function Use(): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
-    if (!target.middlewares) {
-      target.middlewares = [];
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+
+    if (!prototype.middlewares) {
+      prototype.middlewares = [];
     }
-    target.middlewares.push(propertyKey);
+    prototype.middlewares.push(propertyKey.toString());
   };
 }
 
 /** Декоратор для слушателей событий (callback-кнопки) */
-export function On<Ks extends DistinctKeys<Message>[]>(
-  ...listeners: Ks
-): MethodDecorator {
+export function On<Ks extends DistinctKeys<Message>[]>(...filters: Ks): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
-    if (!target.eventListeners) {
-      target.eventListeners = [];
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+
+    if (!prototype.eventListeners) {
+      prototype.eventListeners = [];
     }
-    target.eventListeners.push({ filter: listeners, handler: propertyKey });
+    prototype.eventListeners.push({ filters, handler: propertyKey.toString() });
   };
 }
 
@@ -127,27 +153,32 @@ export function UseGuard<Ctx extends Context = Context>(
   ...guards: UseGuardFn<Ctx>[]
 ): MethodDecorator {
   return (target: any, propertyKey: string | symbol) => {
-    if (!target.guards) {
+    const prototype = target as EcosystemTypes.SceneOrUpdateComponent;
+
+    if (!prototype.guards) {
       target.guards = new Map();
     }
 
+    const summaryGuards = (target.guards.get(propertyKey) || []).concat(guards);
+
     /** Устанавливаем на метод набор гвардов, который он указал через декоратор */
-    target.guards.set(propertyKey, guards);
+    prototype.guards.set(propertyKey.toString(), summaryGuards);
   };
 }
 
 export function ChatType(chatType: AllowChatType) {
-  return (ctx: Context, next: Function) => {
+  return UseGuard((ctx: Context, next: Function) => {
     if (
       chatType == AllowChatType.PUBLIC &&
       (ctx.chat.type == "group" || ctx.chat.type == "supergroup")
     ) {
       return next();
     }
+    console.log(chatType, ctx.chat.type);
     if (chatType == AllowChatType.PRIVATE && ctx.chat.type !== "private") {
       throw BotError.goToPrivateChat();
     }
 
     return next();
-  };
+  });
 }

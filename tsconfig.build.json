@@ -8,5 +8,14 @@
       "telegraf-ecosystem/*": ["../telegraf-ecosystem/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "test/**/*", "*.spec.ts", "examples/*"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "*.spec.ts",
+    "examples",
+    "tailwind.config.js",
+    "postcss.config.js",
+    "docs",
+    ".vitepress"
+  ]
 }

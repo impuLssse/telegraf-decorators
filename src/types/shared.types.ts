@@ -3,6 +3,7 @@ import {
   ReplyKeyboardMarkup,
   ReplyKeyboardRemove,
 } from "@telegraf/types";
+import { Context } from "telegraf";
 import { Buttons, MakeOptions, Keyboard as BaseKeyboard } from "telegram-keyboard";
 
 export interface IContextTypedFunctions {
@@ -26,6 +27,11 @@ export enum AllowChatType {
   PRIVATE = "PRIVATE",
 }
 
+export type UnionKeys<T> = T extends unknown ? keyof T : never;
+export type DistinctKeys<T extends object> = Exclude<UnionKeys<T>, keyof T>;
+
+export type UseGuardFn<Ctx> = (ctx: Ctx, next: Function) => Promise<void> | void;
+
 export interface IContextTypedKeyboard {
   simpleInlineKeyboard: (
     buttons: Buttons,
@@ -43,7 +49,7 @@ export interface IContextTypedKeyboard {
   removeKeyboard: () => RemoveKeyboard;
 }
 
-export type ChatType = "group" | "private";
+export type ChatTypeOf = "group" | "private";
 
 export type InlineKeyboard = {
   reply_markup: InlineKeyboardMarkup;
@@ -55,7 +61,7 @@ export type RemoveKeyboard = {
 
 export type ButtonsStack = Button[] | Button[][];
 
-export type MiddlewareFunction = <Ctx>(ctx: Ctx, next: Function) => void;
+export type MiddlewareFunction = <Ctx extends Context>(ctx: Ctx, next: Function) => void;
 
 export type Button = {
   text: string;

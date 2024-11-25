@@ -26,12 +26,5 @@
       "@*": ["./src/*"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tailwind.config.js",
-    "postcss.config.js",
-    "docs",
-    ".vitepress"
-  ]
+  "exclude": ["tailwind.config.js", "postcss.config.js"]
 }
