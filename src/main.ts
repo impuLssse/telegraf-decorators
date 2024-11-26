@@ -36,7 +36,10 @@ export class Ecosystem<Ctx extends Context = Context> {
     this.stage = new Stage();
     this.bot = ecosystemConfig.bot;
 
-    if (!(ecosystemConfig.bot instanceof Telegraf)) {
+    /**
+     * Кто не знал - композер
+     */
+    if (!(Object.getPrototypeOf(ecosystemConfig.bot) instanceof Object)) {
       throw new Error(`Необходимо передать экземпляр класса telegraf`);
     }
 
@@ -140,7 +143,6 @@ export class Ecosystem<Ctx extends Context = Context> {
 
       /** Регистрируем все команды бота, которые объявлены глобально через @On */
       for (const commandListener of updateInsance.commandListeners || []) {
-        console.log(commandListener);
         this.bot.command(
           commandListener.commands,
           this.handleGuardCycle(updateInsance.guards.get(commandListener.handler)),
@@ -168,6 +170,8 @@ export class Ecosystem<Ctx extends Context = Context> {
 
       /** Создаем экземпляр сцены */
       const sceneInstance = new sceneModule.constructor();
+      console.log(`SceneInstance:`, sceneInstance);
+      // if (Object.getPrototypeOf(sceneInstance)) {}
 
       /** Создаем экземпляр сцены в телеграфе */
       const scene = new TelegrafScenes.BaseScene<Ctx>(sceneModule.sceneId);

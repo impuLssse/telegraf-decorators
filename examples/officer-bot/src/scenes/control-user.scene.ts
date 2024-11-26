@@ -3,6 +3,8 @@ import { Action, Scene, SceneEnter, UseGuard } from "../../../../src";
 
 @Scene(SceneContract.ControlUser)
 export class ControlUserScene {
+  private constructor() {}
+
   @UseGuard()
   @SceneEnter()
   async enterScene(ctx: IContext) {

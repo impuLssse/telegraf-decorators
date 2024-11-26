@@ -5,6 +5,14 @@ import { Message } from "@telegraf/types";
 import { AllowChatType, DistinctKeys, UseGuardFn } from "../types";
 
 export namespace EcosystemTypes {
+  export interface onModuleShutdown {
+    /**
+     * Когда модуль будет выключен - будет вызвана эта функция.
+     * Например, когда мы словили SIGINT сигнал (CTRL-C)
+     */
+    onModuleShutdown(): void | Promise<void>;
+  }
+
   /** Класс на который навешали @Scene будет иметь конструктор и название сцены */
   export type SceneComponent = {
     sceneId: string;

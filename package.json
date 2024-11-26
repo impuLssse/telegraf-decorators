@@ -31,7 +31,10 @@
     "@telegraf/types": "^7.1.0",
     "awilix": "^12.0.3",
     "awilix-manager": "^5.5.0",
+    "chokidar": "^4.0.1",
     "dotenv": "^16.4.5",
+    "rxjs": "^7.8.1",
+    "string-format": "^2.0.0",
     "telegram-keyboard": "^2.3.5",
     "winston": "^3.17.0"
   },
@@ -45,6 +48,7 @@
     "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.15",
     "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.2",
     "vitepress": "^1.5.0"
   },
   "keywords": [

@@ -23,12 +23,17 @@ export class BotLogger {
     });
   }
 
+  error(message: string, error?: unknown) {
+    this.logger.error(`${chalk.redBright(message)}`);
+    console.log(error);
+  }
+
   log(link: string, message: string) {
     this.logger.verbose(`${chalk.greenBright(link)} ${message}`);
   }
 
   fatal(message: string) {
-    this.logger.error(`${chalk.redBright(message)}`);
+    this.logger.error(`${chalk.bgRedBright(message)}`);
   }
 
   warn(message: string) {
