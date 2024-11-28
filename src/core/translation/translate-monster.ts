@@ -55,6 +55,9 @@ export class TranslateService<GeneratedPaths> {
 
   /**
    * Получить перевод по пути
+   * TODO:
+   *  - Сделать передачу аргументов
+   *  - Добавить мультиязычность
    *
    * @param key Полный путь до перевода
    * @returns
@@ -164,3 +167,4 @@ const t = new TranslateService<TranslationKeys>({
   outputPath: path.resolve(__dirname, "./generated.types.ts"),
 });
 console.log(t.getTranslation("en.hello"));
+console.log(t.getTranslation("ru.hello"));
