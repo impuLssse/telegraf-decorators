@@ -8,7 +8,7 @@ import {
 import * as path from "path";
 import * as chokidar from "chokidar";
 import { readFile } from "fs/promises";
-import { EcosystemTypes } from "@common";
+import { EcosystemTypes } from "../../common";
 import { exists, getDirectories, getFiles } from "../../helpers";
 
 export abstract class I18nLoader {

@@ -1,31 +1,30 @@
 import { Type } from "../../types";
 import * as format from "string-format";
 import { I18nLoader } from "./base.loader";
-import { I18nJsonLoader } from "./json.loader";
 
 import { IfAnyOrNever, Path, PathValue } from "../../types";
 // import { I18nValidationError } from "./i18n-validation-error.interface";
 
-export type TranslateOptions = {
-  lang?: string;
-  args?: ({ [k: string]: any } | string)[] | { [k: string]: any };
-  defaultValue?: string;
-  debug?: boolean;
-};
+// export type TranslateOptions = {
+//   lang?: string;
+//   args?: ({ [k: string]: any } | string)[] | { [k: string]: any };
+//   defaultValue?: string;
+//   debug?: boolean;
+// };
 
-export interface I18nTranslator<K = Record<string, unknown>> {
-  translate<P extends Path<K> = any, R = PathValue<K, P>>(
-    key: P,
-    options?: TranslateOptions
-  ): IfAnyOrNever<R, string, R>;
+// export interface I18nTranslator<K = Record<string, unknown>> {
+//   translate<P extends Path<K> = any, R = PathValue<K, P>>(
+//     key: P,
+//     options?: TranslateOptions
+//   ): IfAnyOrNever<R, string, R>;
 
-  t<P extends Path<K> = any, R = PathValue<K, P>>(
-    key: P,
-    options?: TranslateOptions
-  ): IfAnyOrNever<R, string, R>;
+//   t<P extends Path<K> = any, R = PathValue<K, P>>(
+//     key: P,
+//     options?: TranslateOptions
+//   ): IfAnyOrNever<R, string, R>;
 
-  // validate(value: any, options?: TranslateOptions): Promise<I18nValidationError[]>;
-}
+//   // validate(value: any, options?: TranslateOptions): Promise<I18nValidationError[]>;
+// }
 
 export interface I18nPluralObject {
   zero?: string;
@@ -66,11 +65,3 @@ export interface I18nOptions {
   throwOnMissingKey?: boolean;
   typesOutputPath?: string;
 }
-
-export const defaultI18nOptions: Partial<I18nOptions> = {
-  resolvers: [],
-  formatter: format,
-  logging: true,
-  throwOnMissingKey: false,
-  loader: I18nJsonLoader,
-};

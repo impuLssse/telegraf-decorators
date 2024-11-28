@@ -7,9 +7,12 @@ import {
 import { Stage } from "telegraf/scenes";
 import { message } from "telegraf/filters";
 import { isAsyncFunction } from "util/types";
+import { TranslateService, testFn } from "./core/translation";
 import { ExtraModule, KeyboardModule } from "./common";
 import { EcosystemTypes } from "./common/lib-decorators";
 import { Context, Telegraf, Scenes as TelegrafScenes } from "telegraf";
+
+testFn();
 
 export interface EcosystemConfig<Ctx extends Context = Context> {
   bot: Telegraf<Ctx>;
