@@ -16,6 +16,8 @@ export const knexClient = knex({
 });
 
 import "./scenes";
+import { TranslateService } from "telegraf-ecosystem/core/translation";
+import { TranslationKeys } from "telegraf-ecosystem/core/translation/generated.types";
 
 export async function bootstrapBot(): Promise<void> {
   if (!appConfig.DATABASE_URL) {

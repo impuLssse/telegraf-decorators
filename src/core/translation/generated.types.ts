@@ -1,1 +1,1 @@
-export type TranslationKeys = "ru.hello" | "en.hello";
+export type TranslationKeys = "hello" | "button.hello";

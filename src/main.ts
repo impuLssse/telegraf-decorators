@@ -7,12 +7,12 @@ import {
 import { Stage } from "telegraf/scenes";
 import { message } from "telegraf/filters";
 import { isAsyncFunction } from "util/types";
-import { TranslateService, testFn } from "./core/translation";
 import { ExtraModule, KeyboardModule } from "./common";
 import { EcosystemTypes } from "./common/lib-decorators";
 import { Context, Telegraf, Scenes as TelegrafScenes } from "telegraf";
-
-testFn();
+import { TranslateService } from "./core/translation";
+import { TranslationKeys } from "./core/translation/generated.types";
+import path from "path";
 
 export interface EcosystemConfig<Ctx extends Context = Context> {
   bot: Telegraf<Ctx>;
@@ -38,6 +38,17 @@ export class Ecosystem<Ctx extends Context = Context> {
   private async init(ecosystemConfig: EcosystemConfig<Ctx>) {
     this.stage = new Stage();
     this.bot = ecosystemConfig.bot;
+
+    const t = new TranslateService<TranslationKeys, "en" | "ru">({
+      import: {
+        en: path.resolve(__dirname, "core", "translation", "locales", "en"),
+        ru: path.resolve(__dirname, "core", "translation", "locales", "ru"),
+      },
+      outputPath: path.resolve(__dirname, "./core/translation/generated.types.ts"),
+      defaultLanguage: "ru",
+    });
+    console.log(t.getTranslation("hello", ["Maxim", "Kapusta"], "en"));
+    console.log(t.getTranslation("hello"));
 
     /**
      * Кто не знал - композер
@@ -173,7 +184,6 @@ export class Ecosystem<Ctx extends Context = Context> {
 
       /** Создаем экземпляр сцены */
       const sceneInstance = new sceneModule.constructor();
-      console.log(`SceneInstance:`, sceneInstance);
       // if (Object.getPrototypeOf(sceneInstance)) {}
 
       /** Создаем экземпляр сцены в телеграфе */
