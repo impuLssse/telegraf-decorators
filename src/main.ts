@@ -9,7 +9,7 @@ import { session } from "telegraf";
 import { Stage } from "telegraf/scenes";
 import { message } from "telegraf/filters";
 import { isAsyncFunction } from "util/types";
-import { ExtraModule, KeyboardModule } from "./common";
+import { ExtraModule } from "./common";
 import { EcosystemTypes } from "./common/lib-decorators";
 import { EcosystemException } from "./ecosystem-exception";
 import { Context, Telegraf, Scenes as TelegrafScenes } from "telegraf";
@@ -133,18 +133,18 @@ export class Ecosystem<Ctx extends Context = Context> {
     return (ctx: Ctx, next: Function): void => {
       const newCtx = ctx as Ctx &
         IContextTypedFunctions & {
-          k: KeyboardModule;
+          // k: KeyboardModule;
         };
 
       /**
        * Пакет telegram-keyboard это обёртка над Markup в telegraf, а мой пакет это обёртка над telegraf и telegram-keyboard :)
        */
-      const keyboardModule = KeyboardModule.getInstance();
+      // const keyboardModule = KeyboardModule.getInstance();
       const extraModule = ExtraModule.getInstance();
 
       newCtx.ok = extraModule.ok.apply(extraModule, [ctx, next]);
       newCtx.okAndEdit = extraModule.okAndEdit.apply(extraModule, [ctx, next]);
-      newCtx.k = keyboardModule;
+      // newCtx.k = keyboardModule;
       return next();
     };
   }

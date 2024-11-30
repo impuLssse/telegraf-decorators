@@ -1,9 +1,8 @@
 import path from "path";
-import { Logger } from "../../ecosystem-logger";
+import { Logger } from "../ecosystem-logger";
 import { readFileSync, readdirSync } from "fs";
 import { Project, SourceFile } from "ts-morph";
-import chokidar, { FSWatcher } from "chokidar";
-import { EcosystemException } from "../../ecosystem-exception";
+import { EcosystemException } from "../ecosystem-exception";
 
 /**
  * Тип написан с помощью ChatGPT. Я бы никогда до такого не додумался
@@ -82,17 +81,8 @@ export class TranslateService<
     AddNewLanguage<NestedPaths<GeneratedPaths>>
   >();
 
-  private watcher: FSWatcher;
-
   constructor(private translateOptions: TranslateOptions<Languages>) {
     this.createTranslationEcosystem();
-  }
-
-  /** Останавливаем слушалку HotReload на наши файлы */
-  async onModuleShutdown(): Promise<void> {
-    if (this.watcher) {
-      await this.watcher.close();
-    }
   }
 
   private createTranslationEcosystem() {
@@ -113,16 +103,6 @@ export class TranslateService<
         });
         return acc;
       }, []);
-
-    if (this.translateOptions.hotReload) {
-      /** Вешаем слушатель событый на папку с переводами, чтобы можно было перезагружать */
-      // this.watcher = chokidar
-      //   .watch(Object.values(this.translateOptions.import), { ignoreInitial: true })
-      //   .on("all", (event) => {
-      //     // this.events.next(event);
-      //     console.log(`EVENTIK:`);
-      //   });
-    }
 
     this.loadMultipleFiles([...languagesWithSource]);
   }

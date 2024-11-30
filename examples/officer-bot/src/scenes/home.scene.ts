@@ -16,12 +16,12 @@ import { IContext, SceneContract } from "../shared.types";
 export class HomeScene {
   @SceneEnter()
   async enter(ctx: IContext) {
-    await ctx.okAndEdit("Выберите функцию", {
-      ...ctx.k.simpleInlineKeyboard([
-        ["Управление пользователем"],
-        ["Управление офицерами"],
-      ]),
-    });
+    // await ctx.okAndEdit("Выберите функцию", {
+    //   ...ctx.k.simpleInlineKeyboard([
+    //     ["Управление пользователем"],
+    //     ["Управление офицерами"],
+    //   ]),
+    // });
   }
 
   @UseGuard(AuthGuard)

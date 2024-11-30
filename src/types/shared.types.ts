@@ -1,9 +1,6 @@
-import {
-  InlineKeyboardMarkup,
-  ReplyKeyboardMarkup,
-  ReplyKeyboardRemove,
-} from "@telegraf/types";
 import { Context } from "telegraf";
+import { InlineKeyboard, RemoveKeyboard } from "../core";
+import { InlineKeyboardMarkup, ReplyKeyboardMarkup } from "@telegraf/types";
 import { Buttons, MakeOptions, Keyboard as BaseKeyboard } from "telegram-keyboard";
 
 export interface IContextTypedFunctions {
@@ -51,15 +48,7 @@ export interface IContextTypedKeyboard {
 
 export type ChatTypeOf = "group" | "private";
 
-export type InlineKeyboard = {
-  reply_markup: InlineKeyboardMarkup;
-};
-
-export type RemoveKeyboard = {
-  reply_markup: ReplyKeyboardRemove;
-};
-
-export type ButtonsStack = Button[] | Button[][];
+// export type ButtonsStack = Button[] | Button[][];
 
 type IsAny<T> = unknown extends T ? ([keyof T] extends [never] ? false : true) : false;
 
@@ -109,13 +98,6 @@ export type Only<T, U> = {
 };
 
 export type MiddlewareFunction = <Ctx extends Context>(ctx: Ctx, next: Function) => void;
-
-export type Button = {
-  text: string;
-  callback_data?: string;
-  args?: any;
-  hide?: boolean;
-};
 
 export type IExtraTextOptions = Partial<{
   reply: boolean;

@@ -11,16 +11,16 @@ export class ControlDoctorListScene {
       (officer) => officer.name
     );
 
-    const combinedKeyboard = ctx.k
-      .combineKeyboard(
-        ctx.k.simpleKeyboard([[...medicalOfficers]], "officer"),
-        ctx.k.simpleKeyboard(["Назад"])
-      )
-      .inline();
+    // const combinedKeyboard = ctx.k
+    //   .combineKeyboard(
+    //     ctx.k.simpleKeyboard([[...medicalOfficers]], "officer"),
+    //     ctx.k.simpleKeyboard(["Назад"])
+    //   )
+    //   .inline();
 
-    await ctx.okAndEdit("Выберите персонажа", {
-      ...combinedKeyboard,
-    });
+    // await ctx.okAndEdit("Выберите персонажа", {
+    //   ...combinedKeyboard,
+    // });
   }
 
   @UseGuard(AuthGuard)

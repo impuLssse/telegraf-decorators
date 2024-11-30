@@ -6,9 +6,9 @@ import { Scene, SceneEnter, Action, UseGuard } from "../../../../../src";
 export class ControlDoctorsMenuScene {
   @SceneEnter()
   async enter(ctx: IContext) {
-    await ctx.okAndEdit("Выберите функцию", {
-      ...ctx.k.simpleInlineKeyboard([["Список офицеров", "Добавить офицера"], ["Назад"]]),
-    });
+    // await ctx.okAndEdit("Выберите функцию", {
+    //   ...ctx.k.simpleInlineKeyboard([["Список офицеров", "Добавить офицера"], ["Назад"]]),
+    // });
   }
 
   @UseGuard(AuthGuard)

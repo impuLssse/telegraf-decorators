@@ -6,7 +6,7 @@ config({ path: path.resolve(__dirname, "../.env") });
 const appConfig = process.env as IConfig;
 
 import knex from "knex";
-import { Ecosystem } from "telegraf-ecosystem";
+import { Ecosystem, testFn } from "telegraf-ecosystem";
 import { IConfig, IContext, SceneContract } from "./shared.types";
 
 export const knexClient = knex({
@@ -51,6 +51,8 @@ export async function bootstrapBot(): Promise<void> {
   });
   console.log(t.getTranslation("hello", ["Maxim", "Kapusta"], "en"));
   console.log(t.getTranslation("hello"));
+
+  testFn();
 
   ecosystem.bot.start(async (ctx) => {
     await ctx.scene.enter(SceneContract.Home);

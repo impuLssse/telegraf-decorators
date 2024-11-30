@@ -7,9 +7,9 @@ import { Scene, SceneEnter, Action, UseGuard, On } from "../../../../../src";
 export class WaitingPhoneForNewOfficerScene {
   @SceneEnter()
   async enter(ctx: IContext) {
-    await ctx.okAndEdit("Введите телефон для нового офицера", {
-      ...ctx.k.simpleInlineKeyboard(["Назад"]),
-    });
+    // await ctx.okAndEdit("Введите телефон для нового офицера", {
+    //   ...ctx.k.simpleInlineKeyboard(["Назад"]),
+    // });
   }
 
   @On("text")

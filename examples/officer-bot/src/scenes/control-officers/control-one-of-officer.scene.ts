@@ -7,9 +7,9 @@ import { Scene, SceneEnter, Action, UseGuard } from "../../../../../src";
 export class ControlOneOfOfficerScene {
   @SceneEnter()
   async enter(ctx: IContext) {
-    await ctx.okAndEdit(`Управление над: ${ctx.session.officerController.name}`, {
-      ...ctx.k.simpleInlineKeyboard([["Удалить"], ["Назад"]]),
-    });
+    // await ctx.okAndEdit(`Управление над: ${ctx.session.officerController.name}`, {
+    //   ...ctx.k.simpleInlineKeyboard([["Удалить"], ["Назад"]]),
+    // });
   }
 
   @UseGuard(AuthGuard)

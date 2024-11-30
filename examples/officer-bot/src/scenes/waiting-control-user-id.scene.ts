@@ -6,9 +6,9 @@ import { Scene, SceneEnter, Hears, Action } from "../../../../src";
 export class WaitingControlUserIdScene {
   @SceneEnter()
   async enter(ctx: IContext) {
-    await ctx.okAndEdit("Введите *userId* для управления пользователем", {
-      ...ctx.k.simpleInlineKeyboard(["Назад"]),
-    });
+    // await ctx.okAndEdit("Введите *userId* для управления пользователем", {
+    //   ...ctx.k.simpleInlineKeyboard(["Назад"]),
+    // });
   }
 
   @Action("Назад")

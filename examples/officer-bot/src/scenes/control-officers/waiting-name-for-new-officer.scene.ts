@@ -6,12 +6,12 @@ import { Scene, SceneEnter, Action, UseGuard, On } from "../../../../../src";
 export class WaitingNameForNewOfficerScene {
   @SceneEnter()
   async enter(ctx: IContext) {
-    await ctx.okAndEdit(
-      "Введите имя для нового офицера, которому позвонят если упадет что то",
-      {
-        ...ctx.k.simpleInlineKeyboard(["Назад"]),
-      }
-    );
+    // await ctx.okAndEdit(
+    //   "Введите имя для нового офицера, которому позвонят если упадет что то",
+    //   {
+    //     ...ctx.k.simpleInlineKeyboard(["Назад"]),
+    //   }
+    // );
   }
 
   @On("text")

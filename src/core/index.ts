@@ -1,1 +1,2 @@
-export * from "./translation";
+export * from "./translate.service";
+export * from "./keyboard.service";
