@@ -1,7 +1,7 @@
 import { Context } from "telegraf";
 import { Ecosystem } from "../main";
-import { BotError } from "../bot-error";
 import { Message } from "@telegraf/types";
+import { EcosystemException } from "../ecosystem-exception";
 import { AllowChatType, DistinctKeys, UseGuardFn } from "../types";
 
 export namespace EcosystemTypes {
@@ -184,7 +184,7 @@ export function ChatType(chatType: AllowChatType) {
     }
     console.log(chatType, ctx.chat.type);
     if (chatType == AllowChatType.PRIVATE && ctx.chat.type !== "private") {
-      throw BotError.goToPrivateChat();
+      throw EcosystemException.goToPrivateChat();
     }
 
     return next();

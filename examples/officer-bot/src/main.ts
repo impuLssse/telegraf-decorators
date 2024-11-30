@@ -6,7 +6,6 @@ config({ path: path.resolve(__dirname, "../.env") });
 const appConfig = process.env as IConfig;
 
 import knex from "knex";
-import { session, Telegraf } from "telegraf";
 import { Ecosystem } from "telegraf-ecosystem";
 import { IConfig, IContext, SceneContract } from "./shared.types";
 
@@ -16,6 +15,8 @@ export const knexClient = knex({
 });
 
 import "./scenes";
+import { TranslateService } from "telegraf-ecosystem";
+import { TranslationKeys } from "./generated.types";
 
 export async function bootstrapBot(): Promise<void> {
   if (!appConfig.DATABASE_URL) {
@@ -30,27 +31,31 @@ export async function bootstrapBot(): Promise<void> {
     process.exit(1);
   }
 
-  const bot = new Telegraf<IContext>(appConfig.BOT_TOKEN);
-
-  /** Используем middleware для работы с сессиями */
-  bot.use(session());
-
-  const ecosystem = await Ecosystem.createBotEcosystem({
-    bot,
+  const ecosystem = await Ecosystem.createBotEcosystem<IContext>({
+    token: appConfig.BOT_TOKEN,
+    session: {
+      host: "redis",
+    },
     onSceneRegistered(sceneId) {
       console.log(`Scene registered: ${sceneId}`);
     },
   });
 
-  bot.start(async (ctx) => {
+  const t = new TranslateService<TranslationKeys, "en" | "ru">({
+    import: {
+      en: path.resolve(__dirname, "locales", "en"),
+      ru: path.resolve(__dirname, "locales", "ru"),
+    },
+    outputPath: path.resolve(__dirname, "./generated.types.ts"),
+    defaultLanguage: "ru",
+  });
+  console.log(t.getTranslation("hello", ["Maxim", "Kapusta"], "en"));
+  console.log(t.getTranslation("hello"));
+
+  ecosystem.bot.start(async (ctx) => {
     await ctx.scene.enter(SceneContract.Home);
   });
 
-  /**
-   * Запуск бота.
-   * Нельзя запускать асинхронно, потому что под `launch` бесконечный асинхронный итератор
-   */
-  bot.launch({ dropPendingUpdates: true });
   console.log("Bot is running...");
 }
 bootstrapBot();

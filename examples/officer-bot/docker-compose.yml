@@ -1,3 +1,5 @@
+name: "shop-bot"
+
 services:
   postgres:
     container_name: postgres
@@ -8,3 +10,17 @@ services:
       POSTGRES_PASSWORD: officer-password
     ports:
       - 5432:5432
+
+  redis:
+    image: redis/redis-stack
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+
+  redisinsight:
+    image: redis/redisinsight
+    container_name: redisinsight
+    restart: always
+    ports:
+      - 5540:5540

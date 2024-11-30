@@ -1,5 +1,6 @@
 {
   "name": "telegraf-ecosystem",
+  "description": "Фреймворк созданный на основе Nest.js/Typescript/Awilix для тех, кто хочет писать расширяемых telegraf ботов. В исходном коде вы найдете паттерны, конструкции и поведенческие паттерны с объяснениями",
   "scripts": {
     "dev": "nodemon -q",
     "dev:officer-bot": "nodemon -q --config nodemon.common.json",
@@ -30,27 +31,29 @@
   "dependencies": {
     "@telegraf/types": "^7.1.0",
     "awilix": "^12.0.3",
-    "awilix-manager": "^5.5.0",
-    "chokidar": "^4.0.1",
     "dotenv": "^16.4.5",
-    "rxjs": "^7.8.1",
+    "ioredis": "^5.4.1",
+    "npm": "^10.9.1",
     "string-format": "^2.0.0",
     "telegram-keyboard": "^2.3.5",
     "ts-morph": "^24.0.0",
     "winston": "^3.17.0"
   },
   "peerDependencies": {
+    "@telegraf/types": "^7.1.0",
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
     "autoprefixer": "^10.4.20",
     "chalk": "^4.1.2",
+    "chokidar": "^4.0.1",
     "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.15",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
-    "vitepress": "^1.5.0"
+    "vitepress": "^1.5.0",
+    "vitepress-plugin-tabs": "^0.5.0"
   },
   "keywords": [
     "telegraf",

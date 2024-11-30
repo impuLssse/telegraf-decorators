@@ -5,3 +5,4 @@ build
 node_modules
 tsconfig.build.tsbuildinfo
 .vitepress/cache
+.vitepress/dist

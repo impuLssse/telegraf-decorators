@@ -4,19 +4,34 @@ import {
   SceneRegistrationOptions,
   UseGuardFn,
 } from "./types";
+import { Redis } from "ioredis";
+import { session } from "telegraf";
 import { Stage } from "telegraf/scenes";
 import { message } from "telegraf/filters";
 import { isAsyncFunction } from "util/types";
 import { ExtraModule, KeyboardModule } from "./common";
 import { EcosystemTypes } from "./common/lib-decorators";
+import { EcosystemException } from "./ecosystem-exception";
 import { Context, Telegraf, Scenes as TelegrafScenes } from "telegraf";
-import { TranslateService } from "./core/translation";
-import { TranslationKeys } from "./core/translation/generated.types";
-import path from "path";
 
-export interface EcosystemConfig<Ctx extends Context = Context> {
-  bot: Telegraf<Ctx>;
+export interface EcosystemConfig {
+  token: string;
+  dropPendingUpdates?: true;
+  session?: {
+    /** Строка подключения к базе для хранения сессий */
+    host: string;
+
+    port?: number | string;
+
+    /** Префикс, который будет установлен перед ключом. Набор ключей с префиксом - папка (не путать с мамкой) */
+    prefix?: string;
+  };
   onSceneRegistered?(sceneId: string): Promise<void> | void;
+}
+
+export enum SessionType {
+  REDIS = "REDIS",
+  MEMORY = "MEMORY",
 }
 
 /**
@@ -25,35 +40,74 @@ export interface EcosystemConfig<Ctx extends Context = Context> {
 export class Ecosystem<Ctx extends Context = Context> {
   public bot: Telegraf<Ctx>;
   private stage: Stage<any>;
+  private ecosystemConfig: EcosystemConfig;
   private readonly scenesRegistry = new Set<EcosystemTypes.SceneComponent>();
   private readonly updatesRegistry = new Set<EcosystemTypes.UpdateComponent>();
 
   static async createBotEcosystem<Ctx extends Context = Context>(
-    ecosystemConfig: EcosystemConfig<Ctx>
-  ) {
+    ecosystemConfig: EcosystemConfig
+  ): Promise<Ecosystem<Ctx>> {
+    /** Создаем экземпляр нашей системы */
     const createdBotEcosystem = new Ecosystem<Ctx>();
+
+    /** Запускаем инициализацию асинхронно */
     await createdBotEcosystem.init(ecosystemConfig);
+    createdBotEcosystem.ecosystemConfig = ecosystemConfig;
+
+    return createdBotEcosystem;
   }
 
-  private async init(ecosystemConfig: EcosystemConfig<Ctx>) {
+  /**
+   * Инициализируем систему для бота
+   */
+  private async init(ecosystemConfig: EcosystemConfig) {
     this.stage = new Stage();
-    this.bot = ecosystemConfig.bot;
+    this.bot = new Telegraf<Ctx>(ecosystemConfig.token);
 
-    const t = new TranslateService<TranslationKeys, "en" | "ru">({
-      import: {
-        en: path.resolve(__dirname, "core", "translation", "locales", "en"),
-        ru: path.resolve(__dirname, "core", "translation", "locales", "ru"),
-      },
-      outputPath: path.resolve(__dirname, "./core/translation/generated.types.ts"),
-      defaultLanguage: "ru",
-    });
-    console.log(t.getTranslation("hello", ["Maxim", "Kapusta"], "en"));
-    console.log(t.getTranslation("hello"));
+    /**
+     * Используем middleware для работы с сессиями
+     */
+    if (this.ecosystemConfig?.session) {
+      const redisClient = new Redis({
+        host: this.ecosystemConfig?.session?.host || "localhost",
+        port: Number(this.ecosystemConfig?.session?.port) || 6379,
+        keyPrefix: this.ecosystemConfig?.session?.prefix,
+      });
+
+      try {
+        await redisClient.connect();
+      } catch (e) {
+        throw EcosystemException.redisLostConnection();
+      }
+
+      /** Регистрируем редиску в контейнере зависимостей */
+      //
+
+      this.bot.use(
+        session({
+          store: {
+            async get(key) {
+              const value = await redisClient.get(key);
+              return value ? JSON.parse(value) : undefined;
+            },
+            async set(key: string, session: object) {
+              return redisClient.set(key, JSON.stringify(session));
+            },
+            async delete(key: string) {
+              return redisClient.del(key);
+            },
+          },
+        })
+      );
+    } else {
+      /** Если не указан редис как хранилище, то будем указывать по умолчанию в памяти */
+      this.bot.use(session());
+    }
 
     /**
      * Кто не знал - композер
      */
-    if (!(Object.getPrototypeOf(ecosystemConfig.bot) instanceof Object)) {
+    if (!(Object.getPrototypeOf(this.bot) instanceof Object)) {
       throw new Error(`Необходимо передать экземпляр класса telegraf`);
     }
 
@@ -65,6 +119,11 @@ export class Ecosystem<Ctx extends Context = Context> {
 
     /** Регистрируем все глобальные обработчики */
     this.registerUpdates([...this.updatesRegistry]);
+
+    /** Нельзя запускать асинхронно, потому что под капотом в telegraf бесконечный асинхронный итератор */
+    this.bot.launch({
+      dropPendingUpdates: this.ecosystemConfig?.dropPendingUpdates || true,
+    });
   }
 
   /** Конструкор прячем, чтобы никто не мог создать экземпляр класса синхронно */
@@ -93,8 +152,8 @@ export class Ecosystem<Ctx extends Context = Context> {
   private handleGuardCycle(guards: UseGuardFn<Ctx>[]): MiddlewareFunction {
     return async (ctx: any, next: Function) => {
       /**
-       * Chain of Responsability — строится цепочка зависимых от друг друга фукнций.
-       * @see —
+       * Паттерн проектирования `Chain of Responsability` — строится цепочка зависимых от друг друга фукнций.
+       * @see — /patterns/chain-of-responsability
        */
       for (let i = 0; i < guards.length; i++) {
         const guard = guards[i];

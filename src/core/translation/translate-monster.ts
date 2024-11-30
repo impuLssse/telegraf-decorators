@@ -1,6 +1,9 @@
 import path from "path";
+import { Logger } from "../../ecosystem-logger";
 import { readFileSync, readdirSync } from "fs";
 import { Project, SourceFile } from "ts-morph";
+import chokidar, { FSWatcher } from "chokidar";
+import { EcosystemException } from "../../ecosystem-exception";
 
 /**
  * Тип написан с помощью ChatGPT. Я бы никогда до такого не додумался
@@ -59,6 +62,8 @@ export interface TranslateOptions<Languages extends string> {
 
   /** Язык, указанный по умолчанию */
   defaultLanguage?: Languages;
+
+  hotReload?: true;
 }
 
 export class TranslateService<
@@ -77,8 +82,17 @@ export class TranslateService<
     AddNewLanguage<NestedPaths<GeneratedPaths>>
   >();
 
+  private watcher: FSWatcher;
+
   constructor(private translateOptions: TranslateOptions<Languages>) {
     this.createTranslationEcosystem();
+  }
+
+  /** Останавливаем слушалку HotReload на наши файлы */
+  async onModuleShutdown(): Promise<void> {
+    if (this.watcher) {
+      await this.watcher.close();
+    }
   }
 
   private createTranslationEcosystem() {
@@ -99,6 +113,16 @@ export class TranslateService<
         });
         return acc;
       }, []);
+
+    if (this.translateOptions.hotReload) {
+      /** Вешаем слушатель событый на папку с переводами, чтобы можно было перезагружать */
+      // this.watcher = chokidar
+      //   .watch(Object.values(this.translateOptions.import), { ignoreInitial: true })
+      //   .on("all", (event) => {
+      //     // this.events.next(event);
+      //     console.log(`EVENTIK:`);
+      //   });
+    }
 
     this.loadMultipleFiles([...languagesWithSource]);
   }
@@ -140,10 +164,9 @@ export class TranslateService<
           });
         }
       }
-    } catch (e) {
-      throw new Error(
-        `Не удалось загрузить папку с переводами. Либо файлы переводов пустые`
-      );
+    } catch (e: any) {
+      Logger.fatal(`Error: ${e}`);
+      throw EcosystemException.notFoundFolderTransaltion();
     }
 
     const languagesObject = [...pathsToLoad].reduce((acc, pathToLoad) => {
@@ -196,9 +219,7 @@ export class TranslateService<
     try {
       fileContent = readFileSync(destinationI18nFile, { encoding: "utf-8" });
     } catch {
-      throw new Error(
-        `Не удалось загрузить одиночный файл с переводами. Либо файл переводов пустой`
-      );
+      throw EcosystemException.notFoundFileTranslation();
     }
 
     /**

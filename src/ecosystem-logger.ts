@@ -9,7 +9,7 @@ export const commonFormat = format.combine(
   format.printf((info) => `⏱️  [${info.timestamp}] ${info.message}`)
 );
 
-export class BotLogger {
+class BotLogger {
   private logger: WinstonLogger;
 
   constructor() {

@@ -1,11 +1,12 @@
 {
   "scripts": {
-    "dev": "nodemon -q",
+    "dev": "nodemon",
     "migrate:up": "knex migrate:latest --env production",
     "migrate:rollback": "knex migrate:rollback --all --env production"
   },
   "type": "commonjs",
   "dependencies": {
+    "@telegraf/session": "^2.0.0-beta.7",
     "knex": "^3.1.0",
     "mongoose": "^8.7.1",
     "pg": "^8.13.0",
