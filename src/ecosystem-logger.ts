@@ -28,8 +28,10 @@ class BotLogger {
     console.log(error);
   }
 
-  log(link: string, message: string) {
-    this.logger.verbose(`${chalk.greenBright(link)} ${message}`);
+  log(prefix: string, message: string) {
+    this.logger.verbose(
+      `${chalk.greenBright(chalk.bold(prefix))} ${chalk.greenBright(message)}`
+    );
   }
 
   fatal(message: string) {

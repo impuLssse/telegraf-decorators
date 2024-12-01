@@ -1,1 +1,1 @@
-export type TranslationKeys = "button.main-menu" | "hello" | "button.hello";
+export type TranslationKeys = "button.main-menu" | "button.hello" | "hello" | "user-not-found";

@@ -1,13 +1,28 @@
+import {
+  AwilixContainer,
+  createContainer,
+  asClass as asClassAwilix,
+  asValue as asValueAwilix,
+  RegistrationHash,
+} from "awilix";
 import { EcosystemException } from "./ecosystem-exception";
-import { AwilixContainer, asClass, createContainer } from "awilix";
+import { ConstructorClasses, ConstuctorValues } from "./types";
 
-type Constructor<C = any> = new (...args: any[]) => C;
+export type EcosystemInjection<
+  S extends Record<string, ConstructorClasses>,
+  V extends Record<string, ConstuctorValues>
+> = {
+  asClass?: S;
+  asValue?: V;
+};
+
+export type InjectionMethod = "AS_VALUE" | "AS_CLASS";
 
 export class EcosystemContainer<T extends Record<string, any> = {}> {
   /** Словарь зарегистрированных классов, фукнций, значений */
   private container: AwilixContainer;
 
-  constructor() {
+  private constructor() {
     this.container = createContainer({
       /** Про разницу режимов инъекций можно почитать в /patterns/dependency-injection */
       injectionMode: "CLASSIC",
@@ -15,20 +30,40 @@ export class EcosystemContainer<T extends Record<string, any> = {}> {
     });
   }
 
-  /**
-   * Регистрация зависимостей
-   * @param services - объект с парами { имя: класс }
-   */
-  register<U extends Record<string, Constructor>>(nameAndRegistationPair: U) {
-    for (const [key, value] of Object.entries(nameAndRegistationPair)) {
-      this.container.register(key, asClass(value).singleton());
+  get registrations(): RegistrationHash {
+    return this.container.registrations;
+  }
+
+  static createContainer<
+    S extends Record<string, ConstructorClasses>,
+    V extends Record<string, ConstuctorValues>
+  >(injection: EcosystemInjection<S, V>) {
+    const newContainer = new EcosystemContainer<S & V>();
+    return newContainer.register<S, V>(injection);
+  }
+
+  register<
+    S extends Record<string, ConstructorClasses>,
+    V extends Record<string, ConstuctorValues>
+  >({ asClass, asValue }: EcosystemInjection<S, V>) {
+    for (const [key, value] of Object.entries(asClass)) {
+      this.container.register(key, asClassAwilix(value).singleton());
+    }
+    for (const [key, value] of Object.entries(asValue)) {
+      this.container.register(key, asValueAwilix(value));
     }
 
     /**
      * Возвращаемый тип нового контейнера объединяет уже зарегистрированные
-      зависимости (T) и новые зависимости (U), создавая объединенный тип.
+      зависимости и новые зависимости, создавая объединенный тип.
      */
-    return this as EcosystemContainer<T & { [K in keyof U]: InstanceType<U[K]> }>;
+    return this as EcosystemContainer<
+      { [K in keyof S]: InstanceType<S[K]> } & {
+        [K in keyof V]: V[K] extends abstract new (...args: any) => any
+          ? keyof InstanceType<V[K]>
+          : V[K];
+      }
+    >;
   }
 
   /**

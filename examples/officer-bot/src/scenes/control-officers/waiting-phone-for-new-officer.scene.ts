@@ -47,9 +47,9 @@ export class WaitingPhoneForNewOfficerScene {
     await ctx.scene.enter(SceneContract.ControlOfficersHome);
     console.log(`createdOfficer:`, createdOfficer);
 
-    await ctx.ok(
-      `Создан офицер с именем: *${createdOfficer?.name}* и телефоном: *${createdOfficer?.phone}*`
-    );
+    // await ctx.ok(
+    //   `Создан офицер с именем: *${createdOfficer?.name}* и телефоном: *${createdOfficer?.phone}*`
+    // );
   }
 
   @UseGuard(AuthGuard)

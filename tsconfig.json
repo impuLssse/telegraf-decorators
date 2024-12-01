@@ -26,5 +26,5 @@
       "@*": ["./src/*"]
     }
   },
-  "exclude": ["tailwind.config.js", "postcss.config.js"]
+  "exclude": ["tailwind.config.js", "postcss.config.js", "dist", "node_modules"]
 }

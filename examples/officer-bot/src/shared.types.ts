@@ -1,21 +1,28 @@
 import { Types } from "mongoose";
 import { Context } from "telegraf";
-import { UserService } from "@services/user";
+import { container } from "./main";
 import { SceneContextScene } from "telegraf/scenes";
+import { TranslationKeys } from "./generated.types";
 import { Scenes as TelegrafScenes } from "telegraf";
-import { MessageOptions, RemoveKeyboard, ReplyKeyboard } from "telegraf-ecosystem";
+import { EcosystemContainer, IContextTypedFunctions } from "telegraf-ecosystem";
 import { CallbackQuery, Message, Update } from "telegraf/typings/core/types/typegram";
-import { InlineKeyboard } from "telegraf-ecosystem";
 
 export interface IConfig {
   BOT_TOKEN?: string;
   DATABASE_URL?: string;
 }
 
-export interface IContext extends Context, IContextTypedFunctions {
+export type Lang = "ru" | "en";
+
+export type IContext = GeneratedContext<TranslationKeys, Lang> & typeof container;
+
+export interface GeneratedContext<
+  NestedPaths = unknown,
+  Languages extends string = string
+> extends Context,
+    IContextTypedFunctions<NestedPaths, Languages> {
   update: Update.CallbackQueryUpdate & { message: Message.PhotoMessage };
-  // k: KeyboardModule;
-  di: DiContainer;
+  // k: KeyboardModule
   session: SessionData;
   scene: ISceneContextScene;
   callbackQuery: CallbackQuery & { data: string };
@@ -38,15 +45,6 @@ export interface SessionData extends TelegrafScenes.SceneSession<SceneSession> {
   userContoller: Partial<IUser>;
 }
 
-export type AnotherMessageOptions = Partial<
-  InlineKeyboard | ReplyKeyboard | RemoveKeyboard
->;
-
-export interface IContextTypedFunctions {
-  ok(text: string, messageOptions?: AnotherMessageOptions);
-  okAndEdit(text: string, messageOptions?: MessageOptions);
-}
-
 export interface IOfficer {
   id: string;
   chatId: string;
@@ -61,10 +59,6 @@ export interface IUser {
   name?: string;
   phone?: string;
 }
-
-export type DiContainer = {
-  userService: UserService;
-};
 
 export enum SceneContract {
   Home = "Home",

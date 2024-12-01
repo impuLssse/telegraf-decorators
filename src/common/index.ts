@@ -1,2 +1,2 @@
-export * from "./extra.module";
 export * from "./lib-decorators";
+export * from "./redis-client";

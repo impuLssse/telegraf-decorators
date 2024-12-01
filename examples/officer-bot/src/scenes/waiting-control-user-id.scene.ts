@@ -21,15 +21,15 @@ export class WaitingControlUserIdScene {
     const potentialUserId = ctx.message.text.trim();
     const isValidUserId = isValidObjectId(potentialUserId);
     if (!isValidUserId) {
-      await ctx.ok("Введен не правильный objectId");
+      // await ctx.ok("Введен не правильный objectId");
       return;
     }
 
-    const foundUser = await ctx.di.userService.findUser(
+    const foundUser = await ctx.dependencyContainer.userService.findUser(
       new Types.ObjectId(potentialUserId)
     );
     if (!foundUser) {
-      await ctx.ok("Пользователь не найден");
+      await ctx.typedSendMessage("user-not-found");
       return;
     }
 

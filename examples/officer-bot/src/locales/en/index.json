@@ -1,3 +1,4 @@
 {
-  "hello": "Hi {{1}} man. I am {{2}}"
+  "hello": "Hi {{1}} man. I am {{2}}",
+  "user-not-found": "User not found"
 }

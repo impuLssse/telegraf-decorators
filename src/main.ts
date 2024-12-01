@@ -4,17 +4,23 @@ import {
   SceneRegistrationOptions,
   UseGuardFn,
 } from "./types";
-import { Redis } from "ioredis";
 import { session } from "telegraf";
+import { RedisService } from "./common";
 import { Stage } from "telegraf/scenes";
 import { message } from "telegraf/filters";
+import { Logger } from "./ecosystem-logger";
 import { isAsyncFunction } from "util/types";
-import { ExtraModule } from "./common";
 import { EcosystemTypes } from "./common/lib-decorators";
-import { EcosystemException } from "./ecosystem-exception";
+import { EcosystemContainer } from "./ecosystem-container";
 import { Context, Telegraf, Scenes as TelegrafScenes } from "telegraf";
+import {
+  ExtraService,
+  TranslateService,
+  KeyboardService,
+  TranslateOptions,
+} from "./core";
 
-export interface EcosystemConfig {
+export interface EcosystemConfig<Languages extends string = string, NestedPaths> {
   token: string;
   dropPendingUpdates?: true;
   session?: {
@@ -27,28 +33,39 @@ export interface EcosystemConfig {
     prefix?: string;
   };
   onSceneRegistered?(sceneId: string): Promise<void> | void;
-}
 
-export enum SessionType {
-  REDIS = "REDIS",
-  MEMORY = "MEMORY",
+  container?: EcosystemContainer;
+
+  translateOptions?: TranslateOptions<Languages>;
 }
 
 /**
  * Эта коробка приложения, котора будет хранить все обработчики, команды и сцены
  */
-export class Ecosystem<Ctx extends Context = Context> {
+export class Ecosystem<
+  Ctx extends Context = Context,
+  Container extends EcosystemContainer = EcosystemContainer
+> {
   public bot: Telegraf<Ctx>;
   private stage: Stage<any>;
   private ecosystemConfig: EcosystemConfig;
   private readonly scenesRegistry = new Set<EcosystemTypes.SceneComponent>();
   private readonly updatesRegistry = new Set<EcosystemTypes.UpdateComponent>();
 
-  static async createBotEcosystem<Ctx extends Context = Context>(
+  private container: Container;
+
+  get getContainer() {
+    return this.container;
+  }
+
+  /** Конструкор прячем, чтобы никто не мог создать экземпляр класса синхронно */
+  private constructor() {}
+
+  static async createBot<Ctx extends Context>(
     ecosystemConfig: EcosystemConfig
-  ): Promise<Ecosystem<Ctx>> {
+  ): Promise<Ecosystem<Ctx, typeof ecosystemConfig.container>> {
     /** Создаем экземпляр нашей системы */
-    const createdBotEcosystem = new Ecosystem<Ctx>();
+    const createdBotEcosystem = new Ecosystem<Ctx, typeof ecosystemConfig.container>();
 
     /** Запускаем инициализацию асинхронно */
     await createdBotEcosystem.init(ecosystemConfig);
@@ -67,34 +84,30 @@ export class Ecosystem<Ctx extends Context = Context> {
     /**
      * Используем middleware для работы с сессиями
      */
-    if (this.ecosystemConfig?.session) {
-      const redisClient = new Redis({
-        host: this.ecosystemConfig?.session?.host || "localhost",
-        port: Number(this.ecosystemConfig?.session?.port) || 6379,
-        keyPrefix: this.ecosystemConfig?.session?.prefix,
+    if (typeof this.ecosystemConfig?.session == "object") {
+      const redisService = RedisService.getInstance({
+        host: ecosystemConfig.session["host"],
+        port: ecosystemConfig.session["port"],
+        keyPrefix: ecosystemConfig.session["keyPrefix"],
       });
+      await redisService.connect();
 
-      try {
-        await redisClient.connect();
-      } catch (e) {
-        throw EcosystemException.redisLostConnection();
-      }
-
-      /** Регистрируем редиску в контейнере зависимостей */
-      //
+      const handContainer = {
+        translateService: new TranslateService<>(translateOptions),
+      };
 
       this.bot.use(
         session({
           store: {
             async get(key) {
-              const value = await redisClient.get(key);
+              const value = await redisService.redisClient.get(key);
               return value ? JSON.parse(value) : undefined;
             },
             async set(key: string, session: object) {
-              return redisClient.set(key, JSON.stringify(session));
+              return redisService.redisClient.set(key, JSON.stringify(session));
             },
             async delete(key: string) {
-              return redisClient.del(key);
+              return redisService.redisClient.del(key);
             },
           },
         })
@@ -124,15 +137,13 @@ export class Ecosystem<Ctx extends Context = Context> {
     this.bot.launch({
       dropPendingUpdates: this.ecosystemConfig?.dropPendingUpdates || true,
     });
+    Logger.log(`Ecosystem`, "successful running...");
   }
 
-  /** Конструкор прячем, чтобы никто не мог создать экземпляр класса синхронно */
-  private constructor() {}
-
-  private injectInternalModules() {
+  private injectInternalModules<NestedPaths, L extends string = string>() {
     return (ctx: Ctx, next: Function): void => {
       const newCtx = ctx as Ctx &
-        IContextTypedFunctions & {
+        IContextTypedFunctions<NestedPaths, L> & {
           // k: KeyboardModule;
         };
 
@@ -140,11 +151,12 @@ export class Ecosystem<Ctx extends Context = Context> {
        * Пакет telegram-keyboard это обёртка над Markup в telegraf, а мой пакет это обёртка над telegraf и telegram-keyboard :)
        */
       // const keyboardModule = KeyboardModule.getInstance();
-      const extraModule = ExtraModule.getInstance();
+      // const extraModule = ExtraModule.getInstance();
 
-      newCtx.ok = extraModule.ok.apply(extraModule, [ctx, next]);
-      newCtx.okAndEdit = extraModule.okAndEdit.apply(extraModule, [ctx, next]);
-      // newCtx.k = keyboardModule;
+      newCtx.typedSendMessage = extraModule.ok.apply(this.container.dependencyContainer, [
+        ctx,
+        next,
+      ]);
       return next();
     };
   }

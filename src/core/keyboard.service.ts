@@ -1,4 +1,6 @@
+import { Logger } from "../ecosystem-logger";
 import { TranslateService } from "./translate.service";
+import { EcosystemException } from "../ecosystem-exception";
 
 export type ButtonObject<T = string, L = string> = {
   text: T;
@@ -37,8 +39,24 @@ export interface KeyboardOptions<L> {
 
   /**
    * Язык на который будет переведна
+   * @default defaultLanguage в TranslateService
    */
   lang?: L;
+
+  /**
+   * ## Это опция пока не работает, не пользуйтесь
+   *
+   * Выбрасывать ли ошибку если не найдем перевод для кнопки
+   * Если `enableButtonTextTranslation` не указано `true` то это опция не будет работать
+   * @default true
+   */
+  throwOnMissingKey?: boolean;
+
+  /**
+   * Включить перевод кнопок для клавиатуры
+   * @default false
+   */
+  enableButtonTextTranslation?: boolean;
 }
 
 export class Keyboard {
@@ -65,9 +83,43 @@ export class KeyboardService<
   L extends string = string
 > {
   constructor(
-    private keyboardOptions: KeyboardOptions<L> = { columns: 4 },
-    private translateService: TranslateService<NestedPaths, L>
-  ) {}
+    private translateService: TranslateService<NestedPaths, L>,
+    private keyboardOptions: KeyboardOptions<L>
+  ) {
+    /** Указываем настройки, которые проверили */
+    this.keyboardOptions = this.parseOptions(keyboardOptions);
+    Logger.log("KeyboardService", "instance mounted");
+  }
+
+  private parseOptions(keyboardOptions: KeyboardOptions<L>): KeyboardOptions<L> {
+    /** Задаем опции по умолчанию */
+    if (keyboardOptions?.columns == undefined) {
+      this.keyboardOptions.columns = 4;
+    }
+    if (keyboardOptions?.enableButtonTextTranslation == undefined) {
+      this.keyboardOptions.enableButtonTextTranslation = false;
+    }
+    if (keyboardOptions.throwOnMissingKey == undefined) {
+      keyboardOptions.throwOnMissingKey = true;
+    }
+
+    /** Если пришел указанный язык в опциях */
+    if (keyboardOptions.lang !== undefined) {
+      if (!this.translateService.hasLanguage(keyboardOptions.lang)) {
+        throw EcosystemException.languageIsUndefined(
+          `keyboardOptions`,
+          keyboardOptions?.lang
+        );
+      }
+
+      this.keyboardOptions.lang = keyboardOptions.lang;
+    } else {
+      keyboardOptions.lang =
+        keyboardOptions.lang || this.translateService.defaultLanguage;
+    }
+
+    return keyboardOptions;
+  }
 
   /**
    * Объединение клавиатур
@@ -82,10 +134,12 @@ export class KeyboardService<
    */
   typedInlineKeyboard(
     buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][],
-    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+    keyboardOptions?: KeyboardOptions<L>
   ): InlineKeyboard {
-    buttons = this.translateButtons(buttons);
-    return this.simpleKeyboard(buttons, keyboardOptions).inline();
+    return this.buildKeyboard(buttons, {
+      ...keyboardOptions,
+      enableButtonTextTranslation: true,
+    }).inline();
   }
 
   /**
@@ -93,10 +147,12 @@ export class KeyboardService<
    */
   typedReplyKeyboard(
     buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][],
-    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+    keyboardOptions?: KeyboardOptions<L>
   ): ReplyKeyboard {
-    buttons = this.translateButtons(buttons);
-    return this.buildKeyboard(buttons, keyboardOptions).reply();
+    return this.buildKeyboard(buttons, {
+      ...keyboardOptions,
+      enableButtonTextTranslation: true,
+    }).reply();
   }
 
   /**
@@ -104,10 +160,12 @@ export class KeyboardService<
    */
   typedKeyboard(
     buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][],
-    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+    keyboardOptions: KeyboardOptions<L>
   ): Keyboard {
-    buttons = this.translateButtons(buttons);
-    return this.simpleKeyboard(buttons, keyboardOptions);
+    return this.buildKeyboard(buttons, {
+      ...keyboardOptions,
+      enableButtonTextTranslation: true,
+    });
   }
 
   /**
@@ -115,9 +173,9 @@ export class KeyboardService<
    */
   simpleInlineKeyboard(
     buttons: Button[] | Button[][],
-    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+    keyboardOptions?: KeyboardOptions<L>
   ): InlineKeyboard {
-    return this.simpleKeyboard(buttons, keyboardOptions).inline();
+    return this.buildKeyboard(buttons, keyboardOptions).inline();
   }
 
   /**
@@ -125,7 +183,7 @@ export class KeyboardService<
    */
   simpleKeyboard(
     buttons: Button[] | Button[][],
-    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+    keyboardOptions?: KeyboardOptions<L>
   ): Keyboard {
     return this.buildKeyboard(buttons, keyboardOptions);
   }
@@ -135,7 +193,7 @@ export class KeyboardService<
    */
   simpleReplyKeyboard(
     buttons: Button[] | Button[][],
-    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+    keyboardOptions?: KeyboardOptions<L>
   ): ReplyKeyboard {
     return this.buildKeyboard(buttons, keyboardOptions).reply();
   }
@@ -148,71 +206,6 @@ export class KeyboardService<
   }
 
   /**
-   * Переводим кнопки по языкам
-   *
-   * @param buttons - Набор кнопок, которые необходимо перевести
-   * @returns Переведенные кнопки в разных форматах
-   */
-  private translateButtons(
-    buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][]
-  ): TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][] {
-    const accumulatedButtons = buttons.map((buttonOrButtonRow) => {
-      /**
-       * Если нужно перевести ряд кнопок
-       */
-      if (Array.isArray(buttonOrButtonRow)) {
-        const buttonRow = buttonOrButtonRow.map((button) => {
-          if (typeof button == "string") {
-            const translation = this.translateService.getTranslation(
-              button as NestedPaths
-            ) as NestedPaths;
-            return {
-              ...buttonOrButtonRow,
-              text: translation,
-            };
-          }
-
-          const translation = this.translateService.getTranslation(
-            button?.text as NestedPaths,
-            button.args,
-            button.lang as L
-          ) as NestedPaths;
-          return {
-            ...buttonOrButtonRow,
-            text: translation,
-          };
-        });
-      }
-
-      /**
-       * Если пришла типизированная строка
-       */
-      if (typeof buttonOrButtonRow == "string") {
-        const translation = this.translateService.getTranslation(
-          buttonOrButtonRow as NestedPaths
-        ) as NestedPaths;
-        return {
-          text: translation,
-        };
-      }
-
-      /** Тут у тайпскрипта уже едет голова (и у меня) */
-      const translation = this.translateService.getTranslation(
-        buttonOrButtonRow["text"],
-        buttonOrButtonRow["args"],
-        buttonOrButtonRow["lang"]
-      ) as NestedPaths;
-
-      return {
-        ...buttonOrButtonRow,
-        text: translation,
-      };
-    });
-    console.log(accumulatedButtons);
-    return accumulatedButtons;
-  }
-
-  /**
    * Построение клавиатуры из массива кнопок или двумерного массива кнопок.
    * @param buttons - Массив кнопок или двумерный массив кнопок.
    * @param options - Опции для группировки кнопок (например, количество кнопок в ряду).
@@ -220,8 +213,10 @@ export class KeyboardService<
    */
   buildKeyboard(
     buttons: Button[] | Button[][],
-    options: KeyboardOptions<L> = this.keyboardOptions
+    keyboardOptions?: KeyboardOptions<L>
   ): Keyboard {
+    keyboardOptions = this.parseOptions(keyboardOptions);
+
     let currentRow = [];
     let summaryRows = [];
 
@@ -230,22 +225,36 @@ export class KeyboardService<
       if (Array.isArray(buttonOrButtonRow)) {
         for (const button of buttonOrButtonRow) {
           /** Затираем ряд если он превысил лимит */
-          if (currentRow.length >= options?.columns) {
+          if (currentRow.length >= keyboardOptions.columns) {
             summaryRows.push(currentRow);
             currentRow = [];
           }
 
           /** Если пришли строки - сконвертируем в объекты кнопок */
           if (typeof button != "object") {
+            const translatedButton = this.translateService.getTranslation(
+              button as NestedPaths
+            );
+
             currentRow.push(<Button>{
-              text: button,
+              text: keyboardOptions.enableButtonTextTranslation
+                ? translatedButton
+                : button,
               callback_data: button,
             });
             continue;
           }
 
+          const translatedButton = this.translateService.getTranslation(
+            button.text as NestedPaths,
+            button.args,
+            button.lang as L
+          );
+
           currentRow.push(<Button>{
-            text: button["text"],
+            text: keyboardOptions.enableButtonTextTranslation
+              ? translatedButton
+              : button["text"],
             args: button["args"],
             hide: button["hide"] || false,
             callback_data: button["callback_data"],
@@ -255,21 +264,38 @@ export class KeyboardService<
       }
 
       /** Затираем ряд если он превысил лимит */
-      if (currentRow.length >= options?.columns) {
+      if (currentRow.length >= keyboardOptions?.columns) {
         summaryRows.push(currentRow);
         currentRow = [];
       }
       /** Если пришли строки - сконвертируем в объекты кнопок */
       if (typeof buttonOrButtonRow != "object") {
+        const translatedButton = this.translateService.getTranslation(
+          buttonOrButtonRow as NestedPaths,
+          {},
+          this.keyboardOptions.lang
+        );
+
         currentRow.push(<Button>{
-          text: buttonOrButtonRow,
+          text: keyboardOptions.enableButtonTextTranslation
+            ? translatedButton
+            : buttonOrButtonRow,
           callback_data: buttonOrButtonRow,
         });
         continue;
       }
 
+      /** Переводим кнопку на заданный язык */
+      const translatedButton = this.translateService.getTranslation(
+        buttonOrButtonRow.text as NestedPaths,
+        buttonOrButtonRow.args,
+        buttonOrButtonRow.lang as L
+      );
+
       currentRow.push(<Button>{
-        text: buttonOrButtonRow["text"],
+        text: keyboardOptions.enableButtonTextTranslation
+          ? translatedButton
+          : buttonOrButtonRow["text"],
         args: buttonOrButtonRow["args"],
         hide: buttonOrButtonRow["hide"] || false,
         callback_data: buttonOrButtonRow["callback_data"],

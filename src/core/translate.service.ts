@@ -61,8 +61,6 @@ export interface TranslateOptions<Languages extends string> {
 
   /** Язык, указанный по умолчанию */
   defaultLanguage?: Languages;
-
-  hotReload?: true;
 }
 
 export class TranslateService<
@@ -83,6 +81,17 @@ export class TranslateService<
 
   constructor(private translateOptions: TranslateOptions<Languages>) {
     this.createTranslationEcosystem();
+    Logger.log("TranslateService", "instance mounted");
+  }
+
+  get defaultLanguage(): Languages {
+    return this.translateOptions.defaultLanguage;
+  }
+
+  hasLanguage(language: Languages): boolean {
+    return !!(
+      this.languagesObject.get(language) || this.translationObject?.[language as string]
+    );
   }
 
   private createTranslationEcosystem() {
@@ -225,7 +234,8 @@ export class TranslateService<
   getTranslation(
     key: GeneratedPaths,
     params?: TranslationParams,
-    language: Languages = this.translateOptions?.defaultLanguage
+    language: Languages = this.translateOptions?.defaultLanguage,
+    throwOnMissingKey: boolean = true
   ): string {
     const keys = key.split(".");
 
@@ -236,13 +246,14 @@ export class TranslateService<
 
     /** Итерируемся по ключам переводов */
     for (const key of keys) {
-      if (result?.[key] === undefined) {
-        throw new Error(`Translation not found`);
+      if (result?.[key] === undefined && throwOnMissingKey) {
+        throw EcosystemException.translationNotFound(key);
       }
-      result = result[key];
+      result = result?.[key];
     }
 
     if (params && Object.keys(params).length >= 1) {
+      /** Преобразуем массив аргументов в последовательный объект ключ:значение */
       if (Array.isArray(params)) {
         params = params.reduce((paramsObject, param, currentIndex) => {
           paramsObject[`${currentIndex + 1}`] = param;

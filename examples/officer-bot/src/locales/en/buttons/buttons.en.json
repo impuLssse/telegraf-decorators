@@ -1,5 +1,6 @@
 {
   "button": {
-    "main-menu": "Main menu"
+    "main-menu": "Main menu",
+    "hello": "Hello "
   }
 }
