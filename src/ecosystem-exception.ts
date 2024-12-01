@@ -38,4 +38,8 @@ export class EcosystemException extends Error {
   static dependecyNotFound(dependency: string) {
     return new EcosystemException(`Завивимость ${dependency} не найдена`);
   }
+
+  static unexpectedJsonSyntax(path: string) {
+    return new EcosystemException(`Не смог распарсить синтаксис файла перевода: ${path}`);
+  }
 }

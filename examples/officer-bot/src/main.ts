@@ -6,7 +6,7 @@ config({ path: path.resolve(__dirname, "../.env") });
 const appConfig = process.env as IConfig;
 
 import knex from "knex";
-import { Ecosystem, testFn } from "telegraf-ecosystem";
+import { Ecosystem, KeyboardService } from "telegraf-ecosystem";
 import { IConfig, IContext, SceneContract } from "./shared.types";
 
 export const knexClient = knex({
@@ -17,6 +17,7 @@ export const knexClient = knex({
 import "./scenes";
 import { TranslateService } from "telegraf-ecosystem";
 import { TranslationKeys } from "./generated.types";
+import { ReplyKeyboardMarkup } from "@telegraf/types";
 
 export async function bootstrapBot(): Promise<void> {
   if (!appConfig.DATABASE_URL) {
@@ -52,10 +53,14 @@ export async function bootstrapBot(): Promise<void> {
   console.log(t.getTranslation("hello", ["Maxim", "Kapusta"], "en"));
   console.log(t.getTranslation("hello"));
 
-  testFn();
+  const k = new KeyboardService<TranslationKeys>({}, t);
 
   ecosystem.bot.start(async (ctx) => {
-    await ctx.scene.enter(SceneContract.Home);
+    // await ctx.scene.enter(SceneContract.Home);
+
+    await ctx.ok("Hello", {
+      ...k.typedInlineKeyboard(["button.main-menu"], { lang: "en" }),
+    });
   });
 
   console.log("Bot is running...");

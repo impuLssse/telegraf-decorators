@@ -206,7 +206,12 @@ export class TranslateService<
      * 1. Создаем объект из переводов.
      * 2. Устанавливаем набор путей, состоящих из вложенности объектов
      */
-    const translationObject = JSON.parse(fileContent);
+    let translationObject: object;
+    try {
+      translationObject = JSON.parse(fileContent);
+    } catch (e) {
+      throw EcosystemException.unexpectedJsonSyntax(destinationI18nFile);
+    }
     const translationKeys = this.extractNestedKeys(translationObject);
     return { translationObject, translationKeys };
   }

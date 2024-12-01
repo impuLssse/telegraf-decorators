@@ -3,8 +3,9 @@ import { Context } from "telegraf";
 import { UserService } from "@services/user";
 import { SceneContextScene } from "telegraf/scenes";
 import { Scenes as TelegrafScenes } from "telegraf";
-import { MessageOptions } from "telegraf-ecosystem";
+import { MessageOptions, RemoveKeyboard, ReplyKeyboard } from "telegraf-ecosystem";
 import { CallbackQuery, Message, Update } from "telegraf/typings/core/types/typegram";
+import { InlineKeyboard } from "telegraf-ecosystem";
 
 export interface IConfig {
   BOT_TOKEN?: string;
@@ -37,8 +38,12 @@ export interface SessionData extends TelegrafScenes.SceneSession<SceneSession> {
   userContoller: Partial<IUser>;
 }
 
+export type AnotherMessageOptions = Partial<
+  InlineKeyboard | ReplyKeyboard | RemoveKeyboard
+>;
+
 export interface IContextTypedFunctions {
-  ok(text: string, messageOptions?: MessageOptions);
+  ok(text: string, messageOptions?: AnotherMessageOptions);
   okAndEdit(text: string, messageOptions?: MessageOptions);
 }
 

@@ -1,11 +1,16 @@
-export type ButtonObject = {
-  text: string;
+import { TranslateService } from "./translate.service";
+
+export type ButtonObject<T = string, L = string> = {
+  text: T;
   hide?: boolean;
   callback_data?: string;
   args?: Record<string, string>;
+  lang?: L;
 };
 
 export type Button = ButtonObject | string;
+
+export type TypedButton<T extends string> = T | ButtonObject<T>;
 
 export type InlineKeyboard = {
   reply_markup: { inline_keyboard: Button[] | Button[][] };
@@ -16,19 +21,24 @@ export type RemoveKeyboard = {
 };
 
 export interface ReplyKeyboard {
-  reply_markup: Button[] | Button[][];
+  reply_markup: { keyboard: Button[] | Button[][] };
 }
 
 export interface CreateKeyboard {
   buttons: Button[] | Button[][];
 }
 
-export interface KeyboardOptions {
+export interface KeyboardOptions<L> {
   /**
    * Разбить клавиатуру на строки по <n> колонок
    * @default 4
    */
   columns?: number;
+
+  /**
+   * Язык на который будет переведна
+   */
+  lang?: L;
 }
 
 export class Keyboard {
@@ -39,24 +49,25 @@ export class Keyboard {
   }
 
   reply() {
-    return { reply_markup: { reply_markup: this.keyboard.buttons } };
+    return { reply_markup: { keyboard: this.keyboard.buttons } };
   }
 
   inline() {
     return { reply_markup: { inline_keyboard: this.keyboard.buttons } };
   }
-
-  static removeKeyboard() {
-    return { remove_keyboard: true };
-  }
-
-  removeKeyboard() {
-    return { remove_keyboard: true };
-  }
 }
 
-export class KeyboardService<NestedPaths extends string = string> {
-  constructor(private keyboardOptions: KeyboardOptions = { columns: 4 }) {}
+/**
+ * Сервис по работе с клавиатурой: управление инлайн и реплай клавиатур
+ */
+export class KeyboardService<
+  NestedPaths extends string = string,
+  L extends string = string
+> {
+  constructor(
+    private keyboardOptions: KeyboardOptions<L> = { columns: 4 },
+    private translateService: TranslateService<NestedPaths, L>
+  ) {}
 
   /**
    * Объединение клавиатур
@@ -67,11 +78,44 @@ export class KeyboardService<NestedPaths extends string = string> {
   }
 
   /**
+   * Создание типизированной инлайн-клавиатуры
+   */
+  typedInlineKeyboard(
+    buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][],
+    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+  ): InlineKeyboard {
+    buttons = this.translateButtons(buttons);
+    return this.simpleKeyboard(buttons, keyboardOptions).inline();
+  }
+
+  /**
+   * Создание типизированной реплай-клавиатуры
+   */
+  typedReplyKeyboard(
+    buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][],
+    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+  ): ReplyKeyboard {
+    buttons = this.translateButtons(buttons);
+    return this.buildKeyboard(buttons, keyboardOptions).reply();
+  }
+
+  /**
+   * Создание типизированной клавиатуры
+   */
+  typedKeyboard(
+    buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][],
+    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+  ): Keyboard {
+    buttons = this.translateButtons(buttons);
+    return this.simpleKeyboard(buttons, keyboardOptions);
+  }
+
+  /**
    * Создание простой инлайн-клавиатуры
    */
   simpleInlineKeyboard(
     buttons: Button[] | Button[][],
-    keyboardOptions: KeyboardOptions
+    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
   ): InlineKeyboard {
     return this.simpleKeyboard(buttons, keyboardOptions).inline();
   }
@@ -81,9 +125,91 @@ export class KeyboardService<NestedPaths extends string = string> {
    */
   simpleKeyboard(
     buttons: Button[] | Button[][],
-    keyboardOptions: KeyboardOptions
+    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
   ): Keyboard {
     return this.buildKeyboard(buttons, keyboardOptions);
+  }
+
+  /**
+   * Создание простой реплай-клавиатуры
+   */
+  simpleReplyKeyboard(
+    buttons: Button[] | Button[][],
+    keyboardOptions: KeyboardOptions<L> = this.keyboardOptions
+  ): ReplyKeyboard {
+    return this.buildKeyboard(buttons, keyboardOptions).reply();
+  }
+
+  /**
+   * Удаление клавиатуры
+   */
+  removeKeyboard(): RemoveKeyboard {
+    return { reply_markup: { remove_keyboard: true } };
+  }
+
+  /**
+   * Переводим кнопки по языкам
+   *
+   * @param buttons - Набор кнопок, которые необходимо перевести
+   * @returns Переведенные кнопки в разных форматах
+   */
+  private translateButtons(
+    buttons: TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][]
+  ): TypedButton<NestedPaths>[] | TypedButton<NestedPaths>[][] {
+    const accumulatedButtons = buttons.map((buttonOrButtonRow) => {
+      /**
+       * Если нужно перевести ряд кнопок
+       */
+      if (Array.isArray(buttonOrButtonRow)) {
+        const buttonRow = buttonOrButtonRow.map((button) => {
+          if (typeof button == "string") {
+            const translation = this.translateService.getTranslation(
+              button as NestedPaths
+            ) as NestedPaths;
+            return {
+              ...buttonOrButtonRow,
+              text: translation,
+            };
+          }
+
+          const translation = this.translateService.getTranslation(
+            button?.text as NestedPaths,
+            button.args,
+            button.lang as L
+          ) as NestedPaths;
+          return {
+            ...buttonOrButtonRow,
+            text: translation,
+          };
+        });
+      }
+
+      /**
+       * Если пришла типизированная строка
+       */
+      if (typeof buttonOrButtonRow == "string") {
+        const translation = this.translateService.getTranslation(
+          buttonOrButtonRow as NestedPaths
+        ) as NestedPaths;
+        return {
+          text: translation,
+        };
+      }
+
+      /** Тут у тайпскрипта уже едет голова (и у меня) */
+      const translation = this.translateService.getTranslation(
+        buttonOrButtonRow["text"],
+        buttonOrButtonRow["args"],
+        buttonOrButtonRow["lang"]
+      ) as NestedPaths;
+
+      return {
+        ...buttonOrButtonRow,
+        text: translation,
+      };
+    });
+    console.log(accumulatedButtons);
+    return accumulatedButtons;
   }
 
   /**
@@ -94,7 +220,7 @@ export class KeyboardService<NestedPaths extends string = string> {
    */
   buildKeyboard(
     buttons: Button[] | Button[][],
-    options: KeyboardOptions = this.keyboardOptions
+    options: KeyboardOptions<L> = this.keyboardOptions
   ): Keyboard {
     let currentRow = [];
     let summaryRows = [];
@@ -159,15 +285,3 @@ export class KeyboardService<NestedPaths extends string = string> {
     return new Keyboard({ buttons: summaryRows });
   }
 }
-
-export const testFn = () => {};
-
-const k = new KeyboardService();
-
-const aPart = k.buildKeyboard([
-  [{ text: "A1" }, { text: "A2" }],
-  [{ text: "B1" }, { text: "B2" }],
-]);
-const bPart = k.buildKeyboard(["penis1", "penis2"]);
-console.log(`aPart:`, aPart);
-console.log(`bPart:`, bPart);

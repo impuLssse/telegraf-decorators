@@ -1,1 +1,1 @@
-export type TranslationKeys = "hello" | "button.hello";
+export type TranslationKeys = "button.main-menu" | "hello" | "button.hello";
